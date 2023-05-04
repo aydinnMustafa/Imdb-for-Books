@@ -1,0 +1,63 @@
+import React from "react";
+import { AppBar, Toolbar, styled, Box, Typography, Link } from "@mui/material";
+import { red } from "@mui/material/colors";
+import Avatar from "@mui/material/Avatar";
+import AutoStoriesIcon from "@mui/icons-material/AutoStories";
+
+const Navbar = () => {
+  const StyledToolbar = styled(Toolbar)({
+    display: "flex",
+    justifyContent: "space-between",
+    backgroundImage: "linear-gradient( 135deg, #3B2667 10%, #BC78EC 100%);",
+  });
+  const MenuBox = styled(Box)({
+    display: "flex",
+    gap: 30,
+  });
+
+  const MenuItems = [
+    { Name: "Kitaplar", Link: "/books" },
+    { Name: "Beğendiklerim", Link: "/likes" },
+    { Name: "Ödünç alınanlar", Link: "/" },
+  ];
+  return (
+    <AppBar>
+      <StyledToolbar>
+        <Box>
+          <AutoStoriesIcon />
+        </Box>
+        <MenuBox>
+          {MenuItems.map((item) => (
+            <Typography>
+              <Link
+                sx={{
+                  cursor: "pointer",
+                  fontSize: "14px",
+                  color: "#fff",
+                  textDecoration: "none"
+                }}
+                href={item.Link}
+              >
+                {item.Name}
+              </Link>
+            </Typography>
+          ))}
+        </MenuBox>
+        <Box
+          sx={{ display: "flex", flexDirection: "row", alignItems: "center" }}
+        >
+          <Avatar
+            sx={{ bgcolor: red[500], cursor: "pointer" }}
+            aria-label="recipe"
+          >
+            M
+          </Avatar>
+          <Typography sx={{ fontSize: "14px", marginLeft: "8px" }}>
+            Mustafa Aydın
+          </Typography>
+        </Box>
+      </StyledToolbar>
+    </AppBar>
+  );
+};
+export default Navbar;
