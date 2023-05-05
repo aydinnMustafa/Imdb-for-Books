@@ -8,7 +8,7 @@ const PrivateRoute = ({component: Component, ...rest}) => {
     const isAuthenticated = state.isAuthenticated;
     return (
         <Route {...rest} render={props => (
-            isAuthenticated ? <Component {...props} /> : <Redirect to="/signup" />
+            isAuthenticated ? <Component {...props} /> : <Redirect to="/auth" />
         )} />
     );
 };

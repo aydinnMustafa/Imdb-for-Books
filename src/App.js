@@ -12,7 +12,7 @@ function App() {
     <AuthContextProvider>
       <Router>
         <Switch>
-          <Route path="/signup" component={Login} />
+          <Route path="/auth" component={Login} />
 
           <PrivateRoute path="/" exact component={Home} />
           <PrivateRoute path="/books" component={Header} />
