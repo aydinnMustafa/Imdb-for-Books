@@ -3,16 +3,14 @@ import React from "react";
 export const AuthContext = React.createContext();
 
 const initialState = {
-  isAuthenticated: true,
+  isAuthenticated: false,
   user: null,
   token: null,
 };
 
-const reducer = (state, action) => {
+export const authReducer = (state = initialState, action) => {
   switch (action.type) {
     case "LOGIN":
-      localStorage.setItem("user", JSON.stringify(action.payload.user));
-      localStorage.setItem("token", JSON.stringify(action.payload.token));
       return {
         ...state,
         isAuthenticated: true,
@@ -20,11 +18,11 @@ const reducer = (state, action) => {
         token: action.payload.token,
       };
     case "LOGOUT":
-      localStorage.clear();
       return {
         ...state,
         isAuthenticated: false,
         user: null,
+        token: null,
       };
     default:
       return state;
@@ -32,9 +30,8 @@ const reducer = (state, action) => {
 };
 
 const AuthContextProvider = ({ children }) => {
-  const [state, dispatch] = React.useReducer(reducer, initialState);
   return (
-    <AuthContext.Provider value={{ state, dispatch }}>
+    <AuthContext.Provider>
       {children}
     </AuthContext.Provider>
   );

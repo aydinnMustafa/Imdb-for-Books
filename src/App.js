@@ -1,7 +1,7 @@
 import React from "react";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import Home from "./pages/Home";
-import Login from "./pages/Login";
+import Auth from "./pages/Auth";
 import PrivateRoute from "./PrivateRoute";
 import AuthContextProvider from "./shared/context/AuthContext";
 import "./App.css";
@@ -12,7 +12,7 @@ function App() {
     <AuthContextProvider>
       <Router>
         <Switch>
-          <Route path="/auth" component={Login} />
+          <Route path="/auth" component={Auth} />
 
           <PrivateRoute path="/" exact component={Home} />
           <PrivateRoute path="/books" component={Header} />
@@ -22,23 +22,5 @@ function App() {
     </AuthContextProvider>
   );
 }
-// <Router>
-//   <AuthReducer>
-//      <AuthContext.Consumer>
-//       {({ state }) =>
-//         !state.isAuthenticated ? (
-//           <Navigate exact to="/login" />
-//         ) : (
-//           <Navigate exact to="/" />
-//         )
-//       }
-//     </AuthContext.Consumer>
-//     <Routes>
-//       <Route exact path="/login" element={<Login />} />
-//       <Route exact path="/" element={<Home />} />
-
-//     </Routes>
-//   </AuthReducer>
-// </Router>
 
 export default App;

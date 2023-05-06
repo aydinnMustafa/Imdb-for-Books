@@ -1,9 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import Button from "@mui/material/Button";
 import CssBaseline from "@mui/material/CssBaseline";
 // import FormControlLabel from "@mui/material/FormControlLabel";
 // import Checkbox from "@mui/material/Checkbox";
-import Link from "@mui/material/Link";
 import Paper from "@mui/material/Paper";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
@@ -25,9 +24,12 @@ import { FormHelperText } from "@mui/material";
 import Switch from "@mui/material/Switch";
 import Stack from "@mui/material/Stack";
 
+import useFetch from "../shared/hooks/useFetch";
+
 function Login() {
-  const { state } = React.useContext(AuthContext);
-  const isAuthenticated = state.isAuthenticated;
+  const { data, loading, error, get, post } = useFetch();
+  const  {state, dispatch} = useContext(AuthContext);
+  
   const [isLoginMode, setIsLoginMode] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const handleClickShowPassword = () => setShowPassword((show) => !show);
@@ -49,7 +51,7 @@ function Login() {
     password: "",
   });
 
-  console.log(userData.email_adress);
+  
   const handleChange = (event) => {
     setUserData((prevState) => ({
       ...prevState,
@@ -61,7 +63,7 @@ function Login() {
     }));
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     setUserData({
       ...userData,
@@ -69,31 +71,78 @@ function Login() {
     });
     if (!isLoginMode) {
       if (!userData.name) {
-        setErrorMessages({ ...errorMessages, name: "İsim boş olamaz." });
+        setErrorMessages((prevErrorMessages) => ({
+          ...prevErrorMessages,
+          name: "İsim boş olamaz.",
+        }));
       }
       if (!userData.surname) {
-        setErrorMessages({ ...errorMessages, surname: "Soyisim boş olamaz." });
+        setErrorMessages((prevErrorMessages) => ({
+          ...prevErrorMessages,
+          surname: "Soyisim boş olamaz.",
+        }));
       }
     }
     if (!userData.email_adress) {
-      setErrorMessages({
-        ...errorMessages,
+      setErrorMessages((prevErrorMessages) => ({
+        ...prevErrorMessages,
         email_adress: "E-posta adresi girilmedi.",
-      });
+      }));
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userData.email_adress)) {
-      setErrorMessages({
-        ...errorMessages,
+      setErrorMessages((prevErrorMessages) => ({
+        ...prevErrorMessages,
         email_adress: "Hatalı e-posta adresi.",
-      });
+      }));
     }
     if (userData.password.length < 6) {
-      setErrorMessages({
-        ...errorMessages,
+      setErrorMessages((prevErrorMessages) => ({
+        ...prevErrorMessages,
         password: "Şifre en az 6 karakter olmalıdır.",
-      });
+      }));
     }
-    console.log(userData);
+
+    if (isLoginMode) {
+      try {
+        const responseData = await post(
+          "http://localhost:5000/api/users/login",
+          JSON.stringify({
+            email: userData.email_adress,
+            password: userData.password,
+          }),
+        );
+        dispatch({
+          type: "LOGIN",
+          payload: {
+            user:"denemeuseridshg", token:"denemeuseridsi1"
+          }
+      })
+        
+      } catch (err) {
+        console.log(err);
+      }
+    // } else {
+    //   try {
+    //     const formData = new FormData();
+    //     formData.append("email", formState.inputs.email.value);
+    //     console.log(formState.inputs);
+    //     formData.append("name", formState.inputs.name.value);
+    //     formData.append("password", formState.inputs.password.value);
+    //     formData.append("image", formState.inputs.image.value);
+    //     const responseData = await sendRequest(
+    //       "http://localhost:5000/api/users/signup",
+    //       "POST",
+    //       formData
+    //     );
+
+    //     auth.login(responseData.userId, responseData.token);
+    //   } catch (err) {}
+    // }
   };
+  
+  
+
+  };
+  console.log(state);
 
   const switchModeHandler = () => {
     if (!isLoginMode) {
@@ -112,16 +161,16 @@ function Login() {
     setIsLoginMode((prevMode) => !prevMode);
   };
 
-  // SWITCH YARIM KALDI DETAYLI İNCELE DÜZENLE AŞAĞI KAYMAYI DÜZELT.
-  // SWTİCHMODEHANDLER SİGNUP VE LOGİN ARASINDA DEĞİŞME OLDUĞUNDA ARKA PLANDA STATE VERİLERİNİ SIFIRLIYOR AMA FRONTEND AYNI KALIYOR.
-
+  // İNPUTLAR VE ANİMATİON TEXT RESPONSİVE DEĞİL.
   return (
     <React.Fragment>
       <ParticlesBackground />
 
+      {loading && <Loading asOverlay />}
+      
       <Container component="main" maxWidth="lg">
         <Typography
-          sx={{ position: "absolute", top: 100, left: 400, fontSize: "25px" }}
+          sx={{ position: "absolute", top: 75, left: 400, fontSize: "25px" }}
         >
           <Typewriter
             words={[
@@ -138,7 +187,7 @@ function Login() {
         </Typography>
         <Box
           sx={{
-            marginTop: 20,
+            marginTop: 15,
           }}
         >
           <Grid container>
@@ -177,7 +226,7 @@ function Login() {
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
-                  height: "55vh",
+                  height: "65vh",
                 }}
               >
                 <Stack direction="row" alignItems="center">
@@ -188,7 +237,7 @@ function Login() {
                       width: "50ch",
                       height: "100px",
                       "& .MuiSwitch-root.Mui-checked": {
-                        bgcolor: "green"
+                        bgcolor: "#21cc89",
                       },
 
                       "& .MuiSwitch-thumb": {
@@ -198,15 +247,15 @@ function Login() {
                       },
                       "& .MuiSwitch-track": {
                         borderRadius: "37px",
-                        bgcolor: isLoginMode ? 'green' : 'green'
+                        bgcolor: isLoginMode ? "#21cc89" : "#21cc89",
                       },
-                      "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
-                        bgcolor: isLoginMode ? 'green' : 'green'
-                      },
+                      "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track":
+                        {
+                          bgcolor: isLoginMode ? "#21cc89" : "#21cc89",
+                        },
 
                       "& .MuiSwitch-switchBase.Mui-checked": {
                         transform: "translateX(330px)",
-                       
                       },
                     }}
                   />
@@ -217,7 +266,7 @@ function Login() {
                       marginLeft: 20,
                     }}
                   >
-                    {isLoginMode ? "KAYIT" : "GİRİŞ"}
+                    {isLoginMode ? "GİRİŞ" : "KAYIT"}
                   </Typography>
                 </Stack>
                 <Box
@@ -229,7 +278,7 @@ function Login() {
                   {!isLoginMode && (
                     <div>
                       <FormControl
-                        sx={{ mt: 1, width: "50ch", paddingBottom: 0.5 }}
+                        sx={{ mt: 0.5, width: "50ch", paddingBottom: 0.5 }}
                         variant="outlined"
                         error={errorMessages.name ? true : false}
                       >
@@ -248,7 +297,7 @@ function Login() {
                         <FormHelperText>{errorMessages.name}</FormHelperText>
                       </FormControl>
                       <FormControl
-                        sx={{ mt: 1, width: "50ch", paddingBottom: 0.5 }}
+                        sx={{ mt: 0.5, width: "50ch", paddingBottom: 0.5 }}
                         variant="outlined"
                         error={errorMessages.surname ? true : false}
                       >
@@ -270,7 +319,7 @@ function Login() {
                   )}
 
                   <FormControl
-                    sx={{ mt: 1, width: "50ch", paddingBottom: 0.5 }}
+                    sx={{ mt: 0.5, width: "50ch", paddingBottom: 0.5 }}
                     variant="outlined"
                     error={errorMessages.email_adress ? true : false}
                   >
@@ -292,7 +341,7 @@ function Login() {
                   </FormControl>
 
                   <FormControl
-                    sx={{ mt: 1, width: "50ch" }}
+                    sx={{ mt: 0.5, width: "50ch" }}
                     variant="outlined"
                     error={errorMessages.password ? true : false}
                   >
@@ -327,7 +376,7 @@ function Login() {
                     type="submit"
                     fullWidth
                     variant="contained"
-                    sx={{ mt: 3, mb: 2 }}
+                    sx={{ mt: 2.5, mb: 2 }}
                   >
                     {isLoginMode ? "GİRİŞ YAP" : "KAYIT OL"}
                   </Button>
