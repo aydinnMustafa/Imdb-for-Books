@@ -1,8 +1,9 @@
-import React, { useState, useContext } from "react";
+import React, { useState } from "react";
 import Button from "@mui/material/Button";
 import CssBaseline from "@mui/material/CssBaseline";
 // import FormControlLabel from "@mui/material/FormControlLabel";
 // import Checkbox from "@mui/material/Checkbox";
+import Alert from "@mui/material/Alert";
 import Paper from "@mui/material/Paper";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
@@ -16,22 +17,26 @@ import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import InputAdornment from "@mui/material/InputAdornment";
 import IconButton from "@mui/material/IconButton";
 import FormControl from "@mui/material/FormControl";
+import FacebookIcon from "@mui/icons-material/Facebook";
 import OutlinedInput from "@mui/material/OutlinedInput";
 import InputLabel from "@mui/material/InputLabel";
 import Loading from "../Components/Loading";
-import { AuthContext } from "../shared/context/AuthContext";
+
 import { FormHelperText } from "@mui/material";
 import Switch from "@mui/material/Switch";
 import Stack from "@mui/material/Stack";
 
-import useFetch from "../shared/hooks/useFetch";
+import { loginFunc, registerFunc, googleLogin } from "../firebase";
+
+import { auth } from "../firebase";
+import { useHistory } from "react-router-dom";
 
 function Login() {
-  const { data, loading, error, get, post } = useFetch();
-  const  {state, dispatch} = useContext(AuthContext);
-  
+  const history = useHistory();
   const [isLoginMode, setIsLoginMode] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState();
   const handleClickShowPassword = () => setShowPassword((show) => !show);
   const handleMouseDownPassword = (event) => {
     event.preventDefault();
@@ -45,13 +50,12 @@ function Login() {
     isSubmitting: false,
   });
   const [errorMessages, setErrorMessages] = useState({
-    name: "",
-    surname: "",
-    email_adress: "",
-    password: "",
+    name: null,
+    surname: null,
+    email_adress: null,
+    password: null,
   });
 
-  
   const handleChange = (event) => {
     setUserData((prevState) => ({
       ...prevState,
@@ -61,89 +65,69 @@ function Login() {
       ...prevState,
       [event.target.name]: "",
     }));
+    setError("");
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setUserData({
-      ...userData,
+    setUserData((prevUserData) => ({
+      ...prevUserData,
       isSubmitting: true,
-    });
-    if (!isLoginMode) {
-      if (!userData.name) {
-        setErrorMessages((prevErrorMessages) => ({
-          ...prevErrorMessages,
-          name: "İsim boş olamaz.",
-        }));
-      }
-      if (!userData.surname) {
-        setErrorMessages((prevErrorMessages) => ({
-          ...prevErrorMessages,
-          surname: "Soyisim boş olamaz.",
-        }));
-      }
-    }
-    if (!userData.email_adress) {
-      setErrorMessages((prevErrorMessages) => ({
-        ...prevErrorMessages,
-        email_adress: "E-posta adresi girilmedi.",
-      }));
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userData.email_adress)) {
-      setErrorMessages((prevErrorMessages) => ({
-        ...prevErrorMessages,
-        email_adress: "Hatalı e-posta adresi.",
-      }));
-    }
-    if (userData.password.length < 6) {
-      setErrorMessages((prevErrorMessages) => ({
-        ...prevErrorMessages,
-        password: "Şifre en az 6 karakter olmalıdır.",
-      }));
-    }
+    }));
 
-    if (isLoginMode) {
-      try {
-        const responseData = await post(
-          "http://localhost:5000/api/users/login",
-          JSON.stringify({
-            email: userData.email_adress,
-            password: userData.password,
-          }),
+    // state'lerin güncellendiğinden emin olmak için bekleyin
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    // state'lerin güncellendiği son hallerini kullanarak hataları kontrol edin
+    const errorMessages = {
+      name: !isLoginMode && !userData.name ? "İsim boş olamaz." : "",
+      surname: !isLoginMode && !userData.surname ? "Soyisim boş olamaz." : "",
+      email_adress: !userData.email_adress
+        ? "E-posta adresi girilmedi."
+        : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userData.email_adress)
+        ? "Hatalı e-posta adresi."
+        : "",
+      password:
+        userData.password.length < 6 ? "Şifre en az 6 karakter olmalıdır." : "",
+    };
+
+    setErrorMessages(errorMessages);
+
+    // hata mesajlarının güncellendiğinden emin olmak için bekleyin
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    // state'lerin güncellendiği son hallerini kullanarak submit işlemini gerçekleştirin
+    const isFormValid = Object.values(errorMessages).every(
+      (errorMsg) => errorMsg === ""
+    );
+    if (isFormValid) {
+      if (isLoginMode) {
+        loginFunc(
+          auth,
+          userData.email_adress,
+          userData.password,
+          history,
+          setLoading,
+          setError
         );
-        dispatch({
-          type: "LOGIN",
-          payload: {
-            user:"denemeuseridshg", token:"denemeuseridsi1"
-          }
-      })
-        
-      } catch (err) {
-        console.log(err);
+      } else {
+        registerFunc(
+          auth,
+          userData.email_adress,
+          userData.password,
+          history,
+          userData.name,
+          userData.surname,
+          setLoading,
+          setError
+        );
       }
-    // } else {
-    //   try {
-    //     const formData = new FormData();
-    //     formData.append("email", formState.inputs.email.value);
-    //     console.log(formState.inputs);
-    //     formData.append("name", formState.inputs.name.value);
-    //     formData.append("password", formState.inputs.password.value);
-    //     formData.append("image", formState.inputs.image.value);
-    //     const responseData = await sendRequest(
-    //       "http://localhost:5000/api/users/signup",
-    //       "POST",
-    //       formData
-    //     );
-
-    //     auth.login(responseData.userId, responseData.token);
-    //   } catch (err) {}
-    // }
+    } else {
+      console.log("Form hatalı!");
+    }
   };
-  
-  
-
-  };
-  console.log(state);
-
+  console.log("error degeri", error);
+  console.log("loading degeri", loading);
   const switchModeHandler = () => {
     if (!isLoginMode) {
       setUserData({
@@ -151,14 +135,28 @@ function Login() {
         name: undefined,
         surname: undefined,
       });
+      setErrorMessages({
+        ...errorMessages,
+        name: null,
+        surname: null,
+      });
     } else {
       setUserData({
         ...userData,
         name: "",
         surname: "",
       });
+      setErrorMessages({
+        ...errorMessages,
+        name: null,
+        surname: null,
+      });
     }
     setIsLoginMode((prevMode) => !prevMode);
+  };
+
+  const googleLoginHandler = () => {
+    googleLogin(auth, history);
   };
 
   // İNPUTLAR VE ANİMATİON TEXT RESPONSİVE DEĞİL.
@@ -166,11 +164,13 @@ function Login() {
     <React.Fragment>
       <ParticlesBackground />
 
-      {loading && <Loading asOverlay />}
+      {loading === true && <Loading asOverlay />}
+
       
+
       <Container component="main" maxWidth="lg">
         <Typography
-          sx={{ position: "absolute", top: 75, left: 400, fontSize: "25px" }}
+          sx={{ position: "absolute", top: 40, left: 400, fontSize: "25px" }}
         >
           <Typewriter
             words={[
@@ -187,7 +187,7 @@ function Login() {
         </Typography>
         <Box
           sx={{
-            marginTop: 15,
+            marginTop: 10,
           }}
         >
           <Grid container>
@@ -226,7 +226,7 @@ function Login() {
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
-                  height: "65vh",
+                  height: "70vh",
                 }}
               >
                 <Stack direction="row" alignItems="center">
@@ -259,6 +259,7 @@ function Login() {
                       },
                     }}
                   />
+
                   <Typography
                     variant="h5"
                     sx={{
@@ -275,6 +276,39 @@ function Login() {
                   onSubmit={handleSubmit}
                   sx={{ mt: 1 }}
                 >
+                  <Box
+                    variant="contained"
+                    sx={{
+                      mb: 1,
+                      display: "flex",
+                      gap: 1,
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Button variant="outlined" onClick={googleLoginHandler}>
+                      <img
+                        src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIj48cGF0aCBkPSJNMTcuNiA5LjJsLS4xLTEuOEg5djMuNGg0LjhDMTMuNiAxMiAxMyAxMyAxMiAxMy42djIuMmgzYTguOCA4LjggMCAwIDAgMi42LTYuNnoiIGZpbGw9IiM0Mjg1RjQiIGZpbGwtcnVsZT0ibm9uemVybyIvPjxwYXRoIGQ9Ik05IDE4YzIuNCAwIDQuNS0uOCA2LTIuMmwtMy0yLjJhNS40IDUuNCAwIDAgMS04LTIuOUgxVjEzYTkgOSAwIDAgMCA4IDV6IiBmaWxsPSIjMzRBODUzIiBmaWxsLXJ1bGU9Im5vbnplcm8iLz48cGF0aCBkPSJNNCAxMC43YTUuNCA1LjQgMCAwIDEgMC0zLjRWNUgxYTkgOSAwIDAgMCAwIDhsMy0yLjN6IiBmaWxsPSIjRkJCQzA1IiBmaWxsLXJ1bGU9Im5vbnplcm8iLz48cGF0aCBkPSJNOSAzLjZjMS4zIDAgMi41LjQgMy40IDEuM0wxNSAyLjNBOSA5IDAgMCAwIDEgNWwzIDIuNGE1LjQgNS40IDAgMCAxIDUtMy43eiIgZmlsbD0iI0VBNDMzNSIgZmlsbC1ydWxlPSJub256ZXJvIi8+PHBhdGggZD0iTTAgMGgxOHYxOEgweiIvPjwvZz48L3N2Zz4="
+                        alt="Google Sign-In"
+                      />
+                      &nbsp;
+                      <Typography
+                        sx={{ color: "black", fontWeight: "bold" }}
+                        variant="caption"
+                      >
+                        GOOGLE İLE GİRİŞ YAP
+                      </Typography>
+                    </Button>
+                    <Button variant="outlined">
+                      <FacebookIcon />
+                      &nbsp;{" "}
+                      <Typography
+                        sx={{ color: "black", fontWeight: "bold" }}
+                        variant="caption"
+                      >
+                        Facebook İLE GİRİŞ YAP
+                      </Typography>
+                    </Button>
+                  </Box>
                   {!isLoginMode && (
                     <div>
                       <FormControl
@@ -380,6 +414,11 @@ function Login() {
                   >
                     {isLoginMode ? "GİRİŞ YAP" : "KAYIT OL"}
                   </Button>
+                  {error && (
+        <Stack >
+          <Alert severity="error">{error}</Alert>
+        </Stack>
+      )}
                 </Box>
               </Box>
             </Grid>
