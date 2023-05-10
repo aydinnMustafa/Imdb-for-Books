@@ -23,15 +23,25 @@ const useFetch = () => {
   const post = async (url, body, token) => {
     setLoading(true);
     try {
-      const response = await axios.post(url, body, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const headers = {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+      };
 
-      setData(response.data);
-    } catch (error) {
-      setError(error);
+      let response;
+    if (body) {
+      response = await axios.post(url, body, { headers });
+    } else {
+      response = await axios.post(url, { headers });
     }
-    setLoading(false);
+      
+      
+      
+      setData(response.data);
+  } catch (error) {
+      setError(error);
+  }
+  setLoading(false);
   };
 
   return { data, loading, error, get, post };

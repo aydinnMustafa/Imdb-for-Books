@@ -1,39 +1,45 @@
-import React, {useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { onAuthStateChanged } from "firebase/auth";
 import { Route, Redirect } from "react-router-dom";
 import { login, logout } from "./features/userSlice";
 
-
 import { auth } from "./firebase";
-import { selectUser, userStat } from "./features/userSlice";
+import { userStat } from "./features/userSlice";
 import Loading from "./Components/Loading";
+import useFetch from "./shared/hooks/useFetch";
 
 const PrivateRoute = ({ component: Component, ...rest }) => {
-  const user = useSelector(selectUser);
   const dispatch = useDispatch();
   const userStatus = useSelector(userStat);
-
+  const [token, setToken] = useState();
+  const api = useFetch();
   useEffect(() => {
     onAuthStateChanged(auth, (userAuth) => {
       if (userAuth) {
-          console.log(userAuth);
-         dispatch(
-           login({
-             email: userAuth.email,
-             uid: userAuth.uid,
-             displayName: userAuth.displayName,
+        dispatch(
+          login({
+            email: userAuth.email,
+            uid: userAuth.uid,
+            displayName: userAuth.displayName,
           })
-         );
-        
+        );
+        userAuth.getIdToken().then((token) => {
+          setToken(token);
+          async function fetch() {
+            try {
+              await api.post("http://localhost:5000/api/auth", null, token);
+            } catch (err) {
+              console.error(err);
+            }
+          }
+          fetch();
+        });
       } else {
         dispatch(logout());
       }
     });
   }, [dispatch]);
-  
-
-  console.log(user);
 
   return (
     <Route

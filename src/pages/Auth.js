@@ -126,8 +126,6 @@ function Login() {
       console.log("Form hatalı!");
     }
   };
-  console.log("error degeri", error);
-  console.log("loading degeri", loading);
   const switchModeHandler = () => {
     if (!isLoginMode) {
       setUserData({
