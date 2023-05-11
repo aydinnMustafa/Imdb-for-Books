@@ -10,8 +10,8 @@ const router = express.Router();
 
 
 
-router.post('/signup');
-router.post('/login');
+router.post('/signup', usersController.signup);
+// router.post('/login');
 
 
 

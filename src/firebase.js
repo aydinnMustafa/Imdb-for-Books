@@ -8,6 +8,7 @@ import {
 import { logout } from "./features/userSlice";
 
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import axios from "axios";
 
 const firebaseConfig = {
   apiKey: "AIzaSyC2fyoXUqCACxl9X3ZLziqgZLLjhNuZD14",
@@ -73,12 +74,34 @@ export const registerFunc = (
   setLoading(true);
   createUserWithEmailAndPassword(auth, email, password)
     .then((userAuth) => {
-      console.log(userAuth);
       updateProfile(userAuth.user, {
         displayName: `${name} ${surname}`,
       }).catch((error) => {
         console.log("user not updated");
       });
+      async function fetch() {
+        try {
+          axios
+            .post(
+              "http://localhost:5000/api/users/signup",
+              {
+                _id: userAuth.user.uid,
+                fullname: `${name} ${surname}`,
+                email: email,
+              },
+              {
+                headers: {
+                  "Content-Type": "application/json",
+                },
+              }
+            )
+            .then((response) => {});
+        } catch (err) {
+          console.error(err);
+        }
+      }
+      fetch();
+
       if (userAuth) {
         setTimeout(function () {
           setLoading(false);
@@ -111,6 +134,23 @@ export const googleLogin = (auth, history) => {
   signInWithPopup(auth, provider)
     .then((userAuth) => {
       console.log(userAuth);
+      axios.post(
+        "http://localhost:5000/api/users/signup",
+        {
+          _id: userAuth.user.uid,
+          fullname: userAuth.user.displayName,
+          email: userAuth.user.email,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      )
+      .then((response) => {});
+
+
+
       if (userAuth) {
         history.push("/");
       }
@@ -122,6 +162,5 @@ export const googleLogin = (auth, history) => {
 export const onLogout = (history, dispatchFunc) => {
   auth.signOut();
   dispatchFunc(logout());
-    history.push("/auth");
-  
+  history.push("/auth");
 };

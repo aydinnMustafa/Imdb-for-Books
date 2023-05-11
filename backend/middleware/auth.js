@@ -1,4 +1,5 @@
 const admin = require("../firebase-config");
+const User = require('../models/users-schema');
 
 const auth = async (req, res, next) => {
   try {
@@ -8,8 +9,12 @@ const auth = async (req, res, next) => {
     if (req.body.userId && req.body.userId !== userId) {
       throw 'Kullanıcı ID geçersiz!';
     } else {
-      decodedToken.role = 'user';
-      const customToken = await admin.auth().createCustomToken(userId, {role: decodedToken.role});
+      const user = await User.findOne({ _id: userId });
+      if (!user) {
+        throw "Kullanıcı bulunamadı!";
+      }
+      const role = user.role || "user";
+      const customToken = await admin.auth().createCustomToken(userId, {role: role});
       console.log("ONAY BAŞARILI");
       res.status(200).json({token: customToken});
     }

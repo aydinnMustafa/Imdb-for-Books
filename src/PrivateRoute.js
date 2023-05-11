@@ -31,7 +31,7 @@ const PrivateRoute = ({ component: Component, ...rest }) => {
             try {
               axios
                 .post(
-                  "http://localhost:5000/api/auth",
+                  "http://localhost:5000/books",
                   { userId: userAuth.uid },
                   {
                     headers: {
