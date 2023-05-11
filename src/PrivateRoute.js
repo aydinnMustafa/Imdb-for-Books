@@ -7,13 +7,14 @@ import { login, logout } from "./features/userSlice";
 import { auth } from "./firebase";
 import { userStat } from "./features/userSlice";
 import Loading from "./Components/Loading";
-import useFetch from "./shared/hooks/useFetch";
+import jwtDecode from "jwt-decode";
+import axios from "axios";
 
 const PrivateRoute = ({ component: Component, ...rest }) => {
   const dispatch = useDispatch();
   const userStatus = useSelector(userStat);
   const [token, setToken] = useState();
-  const api = useFetch();
+
   useEffect(() => {
     onAuthStateChanged(auth, (userAuth) => {
       if (userAuth) {
@@ -28,7 +29,22 @@ const PrivateRoute = ({ component: Component, ...rest }) => {
           setToken(token);
           async function fetch() {
             try {
-              await api.post("http://localhost:5000/api/auth", null, token);
+              axios
+                .post(
+                  "http://localhost:5000/api/auth",
+                  { userId: userAuth.uid },
+                  {
+                    headers: {
+                      Authorization: `Bearer ${token}`,
+                      "Content-Type": "application/json",
+                    },
+                  }
+                )
+                .then((response) => {
+                  const userToken = response.data.token;
+                  let user = jwtDecode(userToken);
+                  console.log(user);
+                });
             } catch (err) {
               console.error(err);
             }

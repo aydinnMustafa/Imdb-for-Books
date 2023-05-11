@@ -1,13 +1,13 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 
-
+const auth = require('./middleware/auth');
+const usersRoutes = require('./routes/users-routes');
 
 const app = express();
 
 
 app.use(bodyParser.json());
-
 
 
 app.use((req, res, next) => {
@@ -20,10 +20,19 @@ app.use((req, res, next) => {
   next();
 });
 
-app.post("/api/auth", (req, res, next) => {
-   
-  console.log(req.rawHeaders[15]);
-  console.log(req.body);
+
+app.use('/api/users', usersRoutes);
+
+
+app.use((req, res, next) => {
+  const error = new Error('Böyle bir dizin bulunamadı.');
+  error.status = 404;
+  throw error;
 });
 
-app.listen(5000);
+app.post("/api/auth", auth,(req, res,) => {
+  
+});
+  
+    app.listen(5000);
+  

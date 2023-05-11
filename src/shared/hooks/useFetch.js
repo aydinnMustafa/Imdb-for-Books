@@ -29,11 +29,8 @@ const useFetch = () => {
       };
 
       let response;
-    if (body) {
       response = await axios.post(url, body, { headers });
-    } else {
-      response = await axios.post(url, { headers });
-    }
+    
       
       
       

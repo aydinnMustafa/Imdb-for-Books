@@ -1,16 +1,23 @@
 const admin = require("../firebase-config");
 
-module.exports = (req, res, next) => {
-  const token = req.headers.authorization.split(' ')[1];
-  console.log(token);
+const auth = async (req, res, next) => {
   try {
-    const decodedToken = admin.auth().verifyIdToken(token);
-    console.log(decodedToken);
-    if (decodedToken) {
-      return next();
+    const token = req.headers.authorization.split(" ")[1];
+    const decodedToken = await admin.auth().verifyIdToken(token);
+    const userId = decodedToken.uid;
+    if (req.body.userId && req.body.userId !== userId) {
+      throw 'Kullanıcı ID geçersiz!';
+    } else {
+      decodedToken.role = 'user';
+      const customToken = await admin.auth().createCustomToken(userId, {role: decodedToken.role});
+      console.log("ONAY BAŞARILI");
+      res.status(200).json({token: customToken});
     }
-    return res.json({ message: "Hatalı token! Onay verilmedi. " });
-  } catch (err) {
-    return res.json({ message: "Internal Error" });
+  } catch {
+    res.status(401).json({
+      error: new Error('Request başarısız.')
+    });
   }
 };
+
+module.exports = auth;
