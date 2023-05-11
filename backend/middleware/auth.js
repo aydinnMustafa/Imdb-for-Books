@@ -17,6 +17,7 @@ const auth = async (req, res, next) => {
       const customToken = await admin.auth().createCustomToken(userId, {role: role});
       console.log("ONAY BAŞARILI");
       res.status(200).json({token: customToken});
+      
     }
   } catch {
     res.status(401).json({

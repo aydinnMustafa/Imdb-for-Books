@@ -20,6 +20,10 @@ const userSchema = new mongoose.Schema(
       default: "user",
       enum: ["user", "editor", "admin"],
     },
+    canAddBook: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

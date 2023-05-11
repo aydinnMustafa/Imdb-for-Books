@@ -26,9 +26,9 @@ const Navbar = () => {
   });
 
   const MenuItems = [
-    { Name: "Kitaplar", Link: "/books" },
-    { Name: "Beğendiklerim", Link: "/likes" },
-    { Name: "Ödünç alınanlar", Link: "/" },
+    {id:1, Name: "Kitaplar", Link: "/books" },
+    {id:2, Name: "Beğendiklerim", Link: "/likes" },
+    {id:3, Name: "Ödünç alınanlar", Link: "/" },
   ];
 
  
@@ -44,7 +44,7 @@ const logoutHandler = () =>{
         </Box>
         <MenuBox>
           {MenuItems.map((item) => (
-            <Typography>
+            <Typography key={item.id}>
               <Link
                 sx={{
                   cursor: "pointer",

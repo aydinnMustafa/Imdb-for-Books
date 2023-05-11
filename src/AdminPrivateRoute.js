@@ -4,14 +4,15 @@ import { onAuthStateChanged } from "firebase/auth";
 import { Route, Redirect } from "react-router-dom";
 
 import { auth } from "./firebase";
-import { login, logout, userStat } from "./features/userSlice";
+import { login, logout, userStat, selectUser } from "./features/userSlice";
 import Loading from "./Components/Loading";
 import jwtDecode from "jwt-decode";
 import axios from "axios";
 
-const PrivateRoute = ({ component: Component, ...rest }) => {
+const AdminPrivateRoute = ({ component: Component, ...rest }) => {
   const dispatch = useDispatch();
   const userStatus = useSelector(userStat);
+  const userSelect = useSelector(selectUser);
 
   const fetchData = useCallback(() => {
     onAuthStateChanged(auth, (userAuth) => {
@@ -51,22 +52,21 @@ const PrivateRoute = ({ component: Component, ...rest }) => {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
-  
 
   return (
     <Route
       {...rest}
-      render={(props) =>
-        userStatus == null ? (
-          <Loading />
-        ) : userStatus === "connect" ? (
-          <Component {...props} />
-        ) : (
-          <Redirect to="/auth" />
-        )
-      }
+      render={(props) => {
+        if (userStatus == null) {
+          return <Loading />;
+        } else if (userStatus === "connect" && userSelect.role === "admin") {
+          return <Component {...props} />;
+        } else {
+          return <Redirect to="/books" />;
+        }
+      }}
     />
   );
 };
 
-export default PrivateRoute;
+export default AdminPrivateRoute;

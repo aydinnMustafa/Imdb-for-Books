@@ -3,8 +3,9 @@ const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const auth = require("./middleware/auth");
 const usersRoutes = require("./routes/users-routes");
-
 const app = express();
+
+require("dotenv").config();
 
 app.use(bodyParser.json());
 
@@ -21,7 +22,7 @@ app.use((req, res, next) => {
   next();
 });
 app.use("/books", auth);
-
+app.use("/likes", auth);
 app.use("/api/users", usersRoutes);
 
 app.use((req, res, next) => {
@@ -31,9 +32,7 @@ app.use((req, res, next) => {
 });
 
 mongoose
-  .connect(
-    `mongodb+srv://mustafa:J1NxnYkmzskbgDll@cluster0.kl6vgwv.mongodb.net/Imdb-for-Books?retryWrites=true&w=majority`
-  )
+  .connect(process.env.MONGODB_CONNECTION_URL)
   .then(() => {
     app.listen(5000);
   })

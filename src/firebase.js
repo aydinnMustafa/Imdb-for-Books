@@ -38,7 +38,7 @@ export const loginFunc = (
     .then((userAuth) => {
       console.log(userAuth);
       if (userAuth) {
-        history.push("/");
+        history.push("/books");
       }
     })
 
@@ -105,8 +105,8 @@ export const registerFunc = (
       if (userAuth) {
         setTimeout(function () {
           setLoading(false);
-          history.push("/");
-        }, 2000);
+          history.push("/books");
+        }, 3000);
       }
     })
     .catch((err) => {
@@ -134,25 +134,26 @@ export const googleLogin = (auth, history) => {
   signInWithPopup(auth, provider)
     .then((userAuth) => {
       console.log(userAuth);
-      axios.post(
-        "http://localhost:5000/api/users/signup",
-        {
-          _id: userAuth.user.uid,
-          fullname: userAuth.user.displayName,
-          email: userAuth.user.email,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
+      axios
+        .post(
+          "http://localhost:5000/api/users/signup",
+          {
+            _id: userAuth.user.uid,
+            fullname: userAuth.user.displayName,
+            email: userAuth.user.email,
           },
-        }
-      )
-      .then((response) => {});
-
-
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        )
+        .then((response) => {});
 
       if (userAuth) {
-        history.push("/");
+        setTimeout(function () {
+          history.push("/books");
+        }, 300);
       }
     })
     .catch((error) => {

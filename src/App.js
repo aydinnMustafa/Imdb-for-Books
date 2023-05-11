@@ -2,7 +2,10 @@ import React from "react";
 import { BrowserRouter as Router, Switch, Route, Redirect } from "react-router-dom";
 import Home from "./pages/Home";
 import Auth from "./pages/Auth";
+import AdminPanel from './pages/AdminPanel';
+
 import PrivateRoute from "./PrivateRoute";
+import AdminPrivateRoute from "./AdminPrivateRoute";
 
 import "./App.css";
 
@@ -16,6 +19,8 @@ function App() {
         </Route>
         <PrivateRoute path="/books" exact component={Home} />
         <PrivateRoute path="/likes" component={Home} />
+
+        <AdminPrivateRoute path="/admin" component={AdminPanel} />
       </Switch>
     </Router>
   );
