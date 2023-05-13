@@ -23,9 +23,10 @@ const signup = async (req, res, next) => {
       await createdUser.save();
       if (createdUser.role === "admin" && !createdUser.canAddBook) { // kayıt edilen kullanıcı role admin ise kitap ekleme true.
         createdUser.canAddBook = true;
-        await createdUser.save();
+        await createdUser.save();       
       }
-      return res.send("Kullanıcı başarıyla oluşturuldu.");
+      next();
+     // return res.send("Kullanıcı başarıyla oluşturuldu.");
     } catch (err) {
       const error = new Error("Kullanıcı kaydı yapılamadı.");
       error.status = 500;

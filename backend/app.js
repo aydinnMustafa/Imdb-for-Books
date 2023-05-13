@@ -3,6 +3,7 @@ const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const auth = require("./middleware/auth");
 const usersRoutes = require("./routes/users-routes");
+const booksRoutes = require("./routes/books-routes");
 const app = express();
 
 require("dotenv").config();
@@ -21,9 +22,12 @@ app.use((req, res, next) => {
   }
   next();
 });
-app.use("/books", auth);
-app.use("/likes", auth);
+
+// app.use("/books", auth);
+// app.use("/likes", auth);
 app.use("/api/users", usersRoutes);
+app.use("/api/books", booksRoutes);
+
 
 app.use((req, res, next) => {
   const error = new Error("Böyle bir dizin bulunamadı.");

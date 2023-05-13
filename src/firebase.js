@@ -61,6 +61,15 @@ export const loginFunc = (
       setLoading(false);
     });
 };
+
+function deleteCurrentUser() {
+  const user = auth().currentUser;
+  user
+    .delete()
+    .then(function () {})
+    .catch(function (error) {});
+}
+
 export const registerFunc = (
   auth,
   email,
@@ -69,63 +78,56 @@ export const registerFunc = (
   name,
   surname,
   setLoading,
-  setError
+  setError,
 ) => {
   setLoading(true);
   createUserWithEmailAndPassword(auth, email, password)
     .then((userAuth) => {
-      updateProfile(userAuth.user, {
-        displayName: `${name} ${surname}`,
-      }).catch((error) => {
-        console.log("user not updated");
-      });
-      async function fetch() {
-        try {
-          axios
-            .post(
-              "http://localhost:5000/api/users/signup",
-              {
-                _id: userAuth.user.uid,
-                fullname: `${name} ${surname}`,
-                email: email,
+      try {
+        updateProfile(userAuth.user, {
+          displayName: `${name} ${surname}`,
+        });
+      } catch (err) {
+        console.log("Display Name not updated!", err);
+      }
+      userAuth.user?.getIdToken().then((token) => {
+        axios
+          .post(
+            "http://localhost:5000/api/users/signup",
+            {
+              _id: userAuth.user.uid,
+              fullname: `${name} ${surname}`,
+              email: email,
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
               },
-              {
-                headers: {
-                  "Content-Type": "application/json",
-                },
-              }
-            )
-            .then((response) => {});
-        } catch (err) {
-          console.error(err);
-        }
-      }
-      fetch();
-
-      if (userAuth) {
-        setTimeout(function () {
-          setLoading(false);
-          history.push("/books");
-        }, 3000);
-      }
+            }
+          )
+          .then((response) => {
+            auth.currentUser?.getIdTokenResult(true);
+            setTimeout(function () {
+              setLoading(false);
+              history.push("/books");
+            }, 1000);
+          })
+          .catch((e) => {
+            deleteCurrentUser();
+            setLoading(false);
+            setError("Something wrong please try again later.");
+          });
+      });
     })
-    .catch((err) => {
-      let errorMessage;
-      if (err.message === "Firebase: Error (auth/email-already-in-use).") {
-        errorMessage =
-          "Bu mail adresiyle kayıtlı olan bir kullanıcı zaten var!";
-      } else if (
-        err.message ===
-        "Firebase: Password should be at least 6 characters (auth/weak-password)."
-      ) {
-        errorMessage = "Şifreniz 6 karekterden kısa olamaz.";
-      } else if (err.message === "Firebase: Error (auth/internal-error).") {
-        errorMessage = "Şifre boş bırakılamaz!";
-      } else {
-        errorMessage = err.message;
-      }
-      setError(errorMessage);
+    .catch((error) => {
+      const errorCode = error.code;
       setLoading(false);
+      if (errorCode === "auth/email-already-in-use") {
+        setError("Failed to create acount. User already exist!");
+      } else {
+        setError("Something wrong please try again later.");
+      }
     });
 };
 
@@ -133,32 +135,30 @@ const provider = new GoogleAuthProvider();
 export const googleLogin = (auth, history) => {
   signInWithPopup(auth, provider)
     .then((userAuth) => {
-      console.log(userAuth);
-      axios
-        .post(
-          "http://localhost:5000/api/users/signup",
-          {
+      userAuth.user?.getIdToken().then((token) => {
+        axios
+          .post(
+            "http://localhost:5000/api/users/signup",
+            {
             _id: userAuth.user.uid,
             fullname: userAuth.user.displayName,
             email: userAuth.user.email,
-          },
-          {
-            headers: {
-              "Content-Type": "application/json",
             },
-          }
-        )
-        .then((response) => {});
-
-      if (userAuth) {
-        setTimeout(function () {
-          history.push("/books");
-        }, 300);
-      }
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+            }
+          )
+          .then((response) => {
+            auth.currentUser?.getIdTokenResult(true); //We prevent token renewal if the role has been added to the token before in logins with Google.
+            setTimeout(function () {
+              history.push("/books");
+            }, 1000);
+          })
+      });
     })
-    .catch((error) => {
-      console.log(error);
-    });
 };
 export const onLogout = (history, dispatchFunc) => {
   auth.signOut();

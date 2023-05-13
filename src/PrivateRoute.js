@@ -6,41 +6,49 @@ import { Route, Redirect } from "react-router-dom";
 import { auth } from "./firebase";
 import { login, logout, userStat } from "./features/userSlice";
 import Loading from "./Components/Loading";
-import jwtDecode from "jwt-decode";
-import axios from "axios";
+
 
 const PrivateRoute = ({ component: Component, ...rest }) => {
   const dispatch = useDispatch();
   const userStatus = useSelector(userStat);
-
+  
   const fetchData = useCallback(() => {
     onAuthStateChanged(auth, (userAuth) => {
       if (userAuth) {
         userAuth.getIdToken().then((token) => {
-          axios
-            .post(
-              "http://localhost:5000/books",
-              { userId: userAuth.uid },
-              {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                  "Content-Type": "application/json",
-                },
-              }
-            )
-            .then((response) => {
-              const userToken = response.data.token;
-  
-              let userRole = jwtDecode(userToken).claims.role;
-              dispatch(
-                login({
-                  email: userAuth.email,
-                  uid: userAuth.uid,
-                  displayName: userAuth.displayName,
-                  role: userRole,
-                })
-              );
-            });
+          console.log(token);
+          dispatch(
+            login({
+              email: userAuth.email,
+              uid: userAuth.uid,
+              displayName: userAuth.displayName,
+            })
+          );
+          
+          // axios
+          //   .post(
+          //     "http://localhost:5000/books",
+          //     { _id: userAuth.uid },
+          //     {
+          //       headers: {
+          //         Authorization: `Bearer ${token}`,
+          //         "Content-Type": "application/json",
+          //       },
+          //     }
+          //   )
+          //   .then((response) => {
+          //     let userToken = response.data.token;
+          //       console.log(userToken);
+          //     let userRole = jwtDecode(userToken).role;
+          //     dispatch(
+          //       login({
+          //         email: userAuth.email,
+          //         uid: userAuth.uid,
+          //         displayName: userAuth.displayName,
+          //         role: userRole,
+          //       })
+          //     );
+          //   });
         });
       } else {
         dispatch(logout());
