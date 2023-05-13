@@ -6,25 +6,26 @@ import { Route, Redirect } from "react-router-dom";
 import { auth } from "./firebase";
 import { login, logout, userStat } from "./features/userSlice";
 import Loading from "./Components/Loading";
-
+import jwtDecode from "jwt-decode";
 
 const PrivateRoute = ({ component: Component, ...rest }) => {
   const dispatch = useDispatch();
   const userStatus = useSelector(userStat);
-  
+
   const fetchData = useCallback(() => {
     onAuthStateChanged(auth, (userAuth) => {
       if (userAuth) {
         userAuth.getIdToken().then((token) => {
-          console.log(token);
+          let decodeUserRole = jwtDecode(token).role;
           dispatch(
             login({
               email: userAuth.email,
               uid: userAuth.uid,
               displayName: userAuth.displayName,
+              role: decodeUserRole,
             })
           );
-          
+
           // axios
           //   .post(
           //     "http://localhost:5000/books",
@@ -55,11 +56,10 @@ const PrivateRoute = ({ component: Component, ...rest }) => {
       }
     });
   }, [dispatch]);
-  
+
   useEffect(() => {
     fetchData();
   }, [fetchData]);
-  
 
   return (
     <Route

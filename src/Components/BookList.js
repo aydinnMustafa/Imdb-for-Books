@@ -8,8 +8,8 @@ const BookList = () => {
       id: 1,
       name: "Hasan ali yücel klasikleri",
       imageUrl:
-        "https://img.kitapyurdu.com/v1/getImage/fn:11702351/wh:true/wi:220",
-      subheader: "September 14, 2023",
+        "https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1339392178i/37449.jpg",
+      author: "Dostoyevski",
       description:
         "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed malesuada mauris sed vestibulum fermentum. Nullam tristique quam non faucibus tempor.",
     },
@@ -18,7 +18,7 @@ const BookList = () => {
       name: "Jules Verne",
       imageUrl:
         "https://img.kitapyurdu.com/v1/getImage/fn:1131388/wh:true/wi:220",
-      subheader: "July 3, 2023",
+      author: "Dostoyevski",
       description:
         "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed malesuada mauris sed vestibulum fermentum. Nullam tristique quam non faucibus tempor.",
     },
@@ -27,7 +27,7 @@ const BookList = () => {
       name: "Jules Verne",
       imageUrl:
         "https://img.kitapyurdu.com/v1/getImage/fn:11683092/wh:true/wi:220",
-      subheader: "July 3, 2023",
+      author: "Dostoyevski",
       description:
         "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed malesuada mauris sed vestibulum fermentum. Nullam tristique quam non faucibus tempor.",
     },
@@ -36,7 +36,7 @@ const BookList = () => {
       name: "Jules Verne",
       imageUrl:
         "https://img.kitapyurdu.com/v1/getImage/fn:11664066/wh:true/wi:220",
-      subheader: "July 3, 2023",
+      author: "Dostoyevski",
       description:
         "Lorem ipsum dolor sit amet, consecttristique quam non faucibus tempor.",
     },
@@ -45,7 +45,7 @@ const BookList = () => {
       name: "Jules Verne",
       imageUrl:
         "https://img.kitapyurdu.com/v1/getImage/fn:11614703/wh:true/wi:220",
-      subheader: "July 3, 2023",
+      author: "Dostoyevski",
       description:
         "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed malesuada mauris sed vestibulum fermentum. Nullam tristique quam non faucibus tempor.",
     },
@@ -54,18 +54,21 @@ const BookList = () => {
       name: "Jules Verne",
       imageUrl:
         "https://img.kitapyurdu.com/v1/getImage/fn:11705732/wh:true/wi:220",
-      subheader: "July 3, 2023",
+      author: "Dostoyevski",
       description:
         "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed malesuada mauris sed vestibulum fermentum. Nullam tristique quam non faucibus tempor.",
     },
     {
       id: 7,
       name: "Jules Verne",
-      subheader: "July 3, 2023",
+      author: "Dostoyevski",
       description:
         "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed malesuada mauris sed vestibulum fermentum. Nullam tristique quam non faucibus tempor.",
     },
   ];
+
+
+  
   return (
     <React.Fragment>
       <Grid sx={{ flexGrow: 1, marginTop: 8 }} container spacing={2}>
@@ -77,8 +80,9 @@ const BookList = () => {
                   key={book.id}
                   name={book.name}
                   imageUrl={book.imageUrl}
-                  subheader={book.subheader}
+                  author={book.author}
                   description={book.description}
+                  
                 />
               </Grid>
             ))}

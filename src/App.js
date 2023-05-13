@@ -2,6 +2,7 @@ import React from "react";
 import { BrowserRouter as Router, Switch, Route, Redirect } from "react-router-dom";
 import Home from "./pages/Home";
 import Auth from "./pages/Auth";
+import Likes from "./pages/Likes";
 import AdminPanel from './pages/AdminPanel';
 
 import PrivateRoute from "./PrivateRoute";
@@ -18,7 +19,7 @@ function App() {
           <Redirect to="/books" />
         </Route>
         <PrivateRoute path="/books" exact component={Home} />
-        <PrivateRoute path="/likes" component={Home} />
+        <PrivateRoute path="/likes" component={Likes} />
 
         <AdminPrivateRoute path="/admin" component={AdminPanel} />
       </Switch>
