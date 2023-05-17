@@ -23,8 +23,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// app.use("/books", auth);
-// app.use("/likes", auth);
 app.use("/api/users", usersRoutes);
 app.use("/api/books", booksRoutes);
 
