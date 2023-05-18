@@ -111,7 +111,7 @@ export const registerFunc = (
             setTimeout(function () {
               setLoading(false);
               history.push("/books");
-            }, 1000);
+            }, 500);
           })
           .catch((e) => {
             deleteCurrentUser();
@@ -160,6 +160,8 @@ export const googleLogin = (auth, history) => {
       });
     })
 };
+
+
 export const onLogout = (history, dispatchFunc) => {
   auth.signOut();
   dispatchFunc(logout());

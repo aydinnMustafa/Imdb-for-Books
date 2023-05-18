@@ -29,6 +29,7 @@ import Stack from "@mui/material/Stack";
 import { loginFunc, registerFunc, googleLogin } from "../firebase";
 
 import { auth } from "../firebase";
+import { sendPasswordResetEmail } from "firebase/auth";
 import { useHistory } from "react-router-dom";
 
 function Login() {
@@ -37,6 +38,7 @@ function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState();
+  const [info, setInfo] = useState();
   const handleClickShowPassword = () => setShowPassword((show) => !show);
   const handleMouseDownPassword = (event) => {
     event.preventDefault();
@@ -66,6 +68,7 @@ function Login() {
       [event.target.name]: "",
     }));
     setError("");
+    setInfo("");
   };
 
   const handleSubmit = async (event) => {
@@ -119,13 +122,32 @@ function Login() {
           userData.name,
           userData.surname,
           setLoading,
-          setError,   
+          setError
         );
       }
     } else {
       console.log("Form hatalı!");
     }
   };
+
+  const forgotPasswordHandler = () => {
+    sendPasswordResetEmail(auth, userData.email_adress)
+      .then(() => {
+        setInfo("Email send! Please check.");
+      })
+      .catch((error) => {
+        const errorCode = error.code;
+        console.log(errorCode);
+        if (errorCode === "auth/missing-email") {
+          setError("Please enter your email address first, then click.");
+        } else if (errorCode === "auth/user-not-found") {
+          setError("No user found with this email address.");
+        } else {
+          setError("Something wrong please try again later.");
+        }
+      });
+  };
+
   const switchModeHandler = () => {
     if (!isLoginMode) {
       setUserData({
@@ -163,8 +185,6 @@ function Login() {
       <ParticlesBackground />
 
       {loading === true && <Loading asOverlay />}
-
-      
 
       <Container component="main" maxWidth="lg">
         <Typography
@@ -403,6 +423,20 @@ function Login() {
                     />
                     <FormHelperText>{errorMessages.password}</FormHelperText>
                   </FormControl>
+                  {isLoginMode && (
+                    <Typography
+                      variant="body2"
+                      align="right"
+                      sx={{
+                        cursor: "pointer",
+                        textDecoration: "underline",
+                        color: "#4287f5",
+                      }}
+                      onClick={forgotPasswordHandler}
+                    >
+                      Forgot password?
+                    </Typography>
+                  )}
 
                   <Button
                     type="submit"
@@ -413,10 +447,15 @@ function Login() {
                     {isLoginMode ? "GİRİŞ YAP" : "KAYIT OL"}
                   </Button>
                   {error && (
-        <Stack >
-          <Alert severity="error">{error}</Alert>
-        </Stack>
-      )}
+                    <Stack>
+                      <Alert severity="error">{error}</Alert>
+                    </Stack>
+                  )}
+                  {info && (
+                    <Stack>
+                      <Alert severity="success">{info}</Alert>
+                    </Stack>
+                  )}
                 </Box>
               </Box>
             </Grid>

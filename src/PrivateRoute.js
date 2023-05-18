@@ -11,6 +11,7 @@ import jwtDecode from "jwt-decode";
 const PrivateRoute = ({ component: Component, ...rest }) => {
   const dispatch = useDispatch();
   const userStatus = useSelector(userStat);
+  
 
   const fetchData = useCallback(() => {
     onAuthStateChanged(auth, (userAuth) => {

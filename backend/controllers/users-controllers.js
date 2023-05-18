@@ -21,12 +21,13 @@ const signup = async (req, res, next) => {
 
     try {
       await createdUser.save();
-      if (createdUser.role === "admin" && !createdUser.canAddBook) { // kayıt edilen kullanıcı role admin ise kitap ekleme true.
+      if (createdUser.role === "admin" && !createdUser.canAddBook) {
+        // kayıt edilen kullanıcı role admin ise kitap ekleme true.
         createdUser.canAddBook = true;
-        await createdUser.save();       
+        await createdUser.save();
       }
       next();
-     // return res.send("Kullanıcı başarıyla oluşturuldu.");
+      // return res.send("Kullanıcı başarıyla oluşturuldu.");
     } catch (err) {
       const error = new Error("Kullanıcı kaydı yapılamadı.");
       error.status = 500;
@@ -35,4 +36,31 @@ const signup = async (req, res, next) => {
   }
 };
 
+const updateUser = async (req, res, next) => {
+  try {
+    const { fullname, email } = req.body;
+    const userId = req.params.uid;
+
+    // Search user
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ error: "Kullanıcı bulunamadı" });
+    }
+
+    // Update the found user's information with new ones
+    user.fullname = fullname;
+    user.email = email;
+
+    // Save user
+    await user.save();
+
+    res.json({ message: "User update successful" });
+  } catch (error) {
+    console.error("Kullanıcı güncelleme hatası:", error);
+    res.status(500).json({ error: "Kullanıcı güncelleme hatası" });
+  }
+};
+
 exports.signup = signup;
+exports.updateUser = updateUser;

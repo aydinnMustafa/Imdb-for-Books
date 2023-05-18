@@ -6,10 +6,10 @@ const router = express.Router();
 
 router.post('/add', booksController.addBook);
 router.post('/addfavorite', booksController.addFavoriteBook);
-router.post('/', booksController.getBooks);
+router.get('/', booksController.getBooks);
 router.delete('delete/:id', booksController.deleteBook)
 router.post('/favorites', booksController.getFavoriteBooks);
-router.post('/:id', booksController.getBookById);
+router.get('/:id', booksController.getBookById);
 
 
 

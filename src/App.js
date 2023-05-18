@@ -1,10 +1,16 @@
 import React from "react";
-import { BrowserRouter as Router, Switch, Route, Redirect } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  Redirect,
+} from "react-router-dom";
 import Home from "./pages/Home";
 import Auth from "./pages/Auth";
 import Favorites from "./pages/Favorites";
-import AdminPanel from './pages/AdminPanel';
+import AdminPanel from "./pages/AdminPanel";
 import BookDetail from "./pages/BookDetail";
+import Profile from "./pages/Profile";
 
 import PrivateRoute from "./PrivateRoute";
 import AdminPrivateRoute from "./AdminPrivateRoute";
@@ -22,6 +28,7 @@ function App() {
         <PrivateRoute path="/books" exact component={Home} />
         <PrivateRoute path="/favorites" component={Favorites} />
         <PrivateRoute path="/books/:id" component={BookDetail} />
+        <PrivateRoute path="/profile" component={Profile} />
         <AdminPrivateRoute path="/admin" component={AdminPanel} />
       </Switch>
     </Router>

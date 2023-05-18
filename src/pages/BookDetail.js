@@ -21,7 +21,7 @@ const BookDetail = () => {
   useEffect(() => {
     const fetchBookDetails = async () => {
       try {
-        const response = await axios.post(
+        const response = await axios.get(
           `http://localhost:5000/api/books/${id}`
         );
         setBookDetails(response.data.book);

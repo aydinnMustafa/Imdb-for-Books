@@ -17,7 +17,7 @@ const BookList = () => {
   useEffect(() => {
     const fetchBooks = async () => {
       try {
-        const response = await axios.post("http://localhost:5000/api/books/");
+        const response = await axios.get("http://localhost:5000/api/books/");
         setLoadedBooks(response.data.books);
       } catch (err) {
         console.error(err);
