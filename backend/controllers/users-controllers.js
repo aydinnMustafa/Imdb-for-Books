@@ -1,5 +1,5 @@
 const User = require("../models/users-schema");
-
+const HttpError = require("../models/http-error");
 const signup = async (req, res, next) => {
   const { _id, fullname, email, role } = req.body;
   let existingUser;
@@ -9,7 +9,7 @@ const signup = async (req, res, next) => {
     // Firebase zaten mongoDB'ye kullanıcıyı kayıt etmeden önce existingUser kontrolü yapıyor.
     // Fakat google ile girişleri ilk girişte mongoDB'ye kayıt etmemiz gerekirken daha sonraki seferlerde kayıt edersek zaten user olduğu için hata alırız.
     // Bu durumda kayıt fonksiyonunun çalışmaması için existing user kontrolü yapıyoruz.
-    return res.send("Bu kullanıcı zaten kayıtlı.");
+    return res.send("This user is already registered.");
   } else {
     // Existing user bulunamadı, yeni bir kullanıcı oluşturulacak.
     const createdUser = new User({
@@ -27,11 +27,9 @@ const signup = async (req, res, next) => {
         await createdUser.save();
       }
       next();
-      // return res.send("Kullanıcı başarıyla oluşturuldu.");
     } catch (err) {
-      const error = new Error("Kullanıcı kaydı yapılamadı.");
-      error.status = 500;
-      throw error;
+      const error = new HttpError('User registration failed. Please try again.', 500);
+      return next(error);
     }
   }
 };
@@ -45,7 +43,9 @@ const updateUser = async (req, res, next) => {
     const user = await User.findById(userId);
 
     if (!user) {
-      return res.status(404).json({ error: "Kullanıcı bulunamadı" });
+      const error = new HttpError('User not found.', 404);
+      return next(error);
+     
     }
 
     // Update the found user's information with new ones
@@ -56,9 +56,9 @@ const updateUser = async (req, res, next) => {
     await user.save();
 
     res.json({ message: "User update successful" });
-  } catch (error) {
-    console.error("Kullanıcı güncelleme hatası:", error);
-    res.status(500).json({ error: "Kullanıcı güncelleme hatası" });
+  } catch (err) {
+    const error = new HttpError('The user could not be updated. Please try again.', 500);
+      return next(error);
   }
 };
 

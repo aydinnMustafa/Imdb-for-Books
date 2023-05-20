@@ -10,14 +10,16 @@ import { selectUser } from "../features/userSlice";
 
 function FavoritesPage() {
   const [loading, setLoading] = useState(true);
-  const [favoriteBooks, setFavoriteBooks] = useState();
+  const [loadedFavoritesBooks, setLoadedFavoritesBooks] = useState();
+  const [favoritesBooks, setFavoritesBooks] = useState({});
 
   const user = useSelector(selectUser);
   useEffect(() => {
     const fetchFavoriteBooks = async () => {
       try {
         const response = await axios.post(
-          "http://localhost:5000/api/books/favorites",
+          process.env.REACT_APP_BACKEND_URL + "/books/favorites",
+
           {
             userId: user.uid,
           },
@@ -27,7 +29,12 @@ function FavoritesPage() {
             },
           }
         );
-        setFavoriteBooks(response.data.favoritebooks);
+        setLoadedFavoritesBooks(response.data.favoritebooks);
+        const favoritesBooksObj = {};
+        response.data.favoritebooks.forEach((favorite) => {
+          favoritesBooksObj[favorite._id] = true;
+        });
+        setFavoritesBooks(favoritesBooksObj);
         setLoading(false);
       } catch (err) {
         console.error(err);
@@ -36,6 +43,31 @@ function FavoritesPage() {
     fetchFavoriteBooks();
   }, [user.uid]);
 
+  const toggleFavorite = async (bookId) => {
+    try {
+      if (!favoritesBooks[bookId]) {
+        setFavoritesBooks({ ...favoritesBooks, [bookId]: true });
+      } else {
+        setFavoritesBooks({ ...favoritesBooks, [bookId]: false });
+      }
+
+      await axios.post(
+        process.env.REACT_APP_BACKEND_URL + "/books/addfavorite",
+        {
+          userId: user.uid,
+          bookId: bookId,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
     <React.Fragment>
       {loading && <Loading />}
@@ -43,8 +75,8 @@ function FavoritesPage() {
       <Grid sx={{ flexGrow: 1, marginTop: 8 }} container spacing={2}>
         <Grid item xs={12}>
           <Grid container justifyContent="center" spacing={"2"}>
-            {favoriteBooks && favoriteBooks.length > 0 ? (
-              favoriteBooks.map((book) => (
+            {loadedFavoritesBooks && loadedFavoritesBooks.length > 0 ? (
+              loadedFavoritesBooks.map((book) => (
                 <Grid key={book._id} item padding={2}>
                   <BookItem
                     key={book.id}
@@ -56,7 +88,9 @@ function FavoritesPage() {
                         : book.description.substring(0, 165) + "..."
                     }
                     imageUrl={book.image}
-                    isFavorite={book.isFavorite}
+                    isFavorite={favoritesBooks[book._id]}
+                    toggleFavorite={() => toggleFavorite(book._id)}
+                    bookDetails={`/books/${book._id}`}
                   />
                 </Grid>
               ))

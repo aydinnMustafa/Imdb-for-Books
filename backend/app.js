@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const auth = require("./middleware/auth");
 const usersRoutes = require("./routes/users-routes");
 const booksRoutes = require("./routes/books-routes");
+const HttpError = require("./models/http-error");
 const app = express();
 
 require("dotenv").config();
@@ -28,8 +29,7 @@ app.use("/api/books", booksRoutes);
 
 
 app.use((req, res, next) => {
-  const error = new Error("Böyle bir dizin bulunamadı.");
-  error.status = 404;
+  const error = new HttpError('Could not find this route.', 404);
   throw error;
 });
 

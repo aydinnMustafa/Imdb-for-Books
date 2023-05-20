@@ -17,7 +17,7 @@ const BookList = () => {
   useEffect(() => {
     const fetchBooks = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/books/");
+        const response = await axios.get(process.env.REACT_APP_BACKEND_URL + "/books/");
         setLoadedBooks(response.data.books);
       } catch (err) {
         console.error(err);
@@ -29,7 +29,7 @@ const BookList = () => {
   useEffect(() => {
     async function fetchFavoritesBooks() {
       const response = await axios.post(
-        "http://localhost:5000/api/books/favorites",
+        process.env.REACT_APP_BACKEND_URL + "/books/favorites",
         {
           userId: user.uid,
         },
@@ -59,7 +59,7 @@ const BookList = () => {
       }
 
       await axios.post(
-        "http://localhost:5000/api/books/addfavorite",
+        process.env.REACT_APP_BACKEND_URL + "/books/addfavorite",
         {
           userId: user.uid,
           bookId: bookId,

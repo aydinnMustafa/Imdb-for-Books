@@ -132,7 +132,7 @@ function Profile() {
         await updateEmail(currentUser, userData.email_adress);
         await updatePassword(currentUser, userData.newPassword);
         axios.patch(
-          `http://localhost:5000/api/users/${currentUser.uid}`,
+          process.env.REACT_APP_BACKEND_URL + `/users/${currentUser.uid}`,
           {
             fullname: userData.fullname,
             email: userData.email_adress,

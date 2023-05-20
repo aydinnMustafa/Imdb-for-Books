@@ -11,13 +11,13 @@ import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import axios from "axios";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyC2fyoXUqCACxl9X3ZLziqgZLLjhNuZD14",
-  authDomain: "imdb-for-books-ebe73.firebaseapp.com",
-  projectId: "imdb-for-books-ebe73",
-  storageBucket: "imdb-for-books-ebe73.appspot.com",
-  messagingSenderId: "592924651473",
-  appId: "1:592924651473:web:76c4a973ddc4fc66a5baf0",
-  measurementId: "G-KE41GTX2BM",
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_FIREBASE_APP_ID,
+  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID,
 };
 
 // init firebase app
@@ -78,7 +78,7 @@ export const registerFunc = (
   name,
   surname,
   setLoading,
-  setError,
+  setError
 ) => {
   setLoading(true);
   createUserWithEmailAndPassword(auth, email, password)
@@ -93,7 +93,7 @@ export const registerFunc = (
       userAuth.user?.getIdToken().then((token) => {
         axios
           .post(
-            "http://localhost:5000/api/users/signup",
+            process.env.REACT_APP_BACKEND_URL + "/users/signup",
             {
               _id: userAuth.user.uid,
               fullname: `${name} ${surname}`,
@@ -133,34 +133,32 @@ export const registerFunc = (
 
 const provider = new GoogleAuthProvider();
 export const googleLogin = (auth, history) => {
-  signInWithPopup(auth, provider)
-    .then((userAuth) => {
-      userAuth.user?.getIdToken().then((token) => {
-        axios
-          .post(
-            "http://localhost:5000/api/users/signup",
-            {
+  signInWithPopup(auth, provider).then((userAuth) => {
+    userAuth.user?.getIdToken().then((token) => {
+      axios
+        .post(
+          process.env.REACT_APP_BACKEND_URL + "/users/signup",
+          {
             _id: userAuth.user.uid,
             fullname: userAuth.user.displayName,
             email: userAuth.user.email,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
             },
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
-              },
-            }
-          )
-          .then((response) => {
-            auth.currentUser?.getIdTokenResult(true); //We prevent token renewal if the role has been added to the token before in logins with Google.
-            setTimeout(function () {
-              history.push("/books");
-            }, 1000);
-          })
-      });
-    })
+          }
+        )
+        .then((response) => {
+          auth.currentUser?.getIdTokenResult(true); //We prevent token renewal if the role has been added to the token before in logins with Google.
+          setTimeout(function () {
+            history.push("/books");
+          }, 500);
+        });
+    });
+  });
 };
-
 
 export const onLogout = (history, dispatchFunc) => {
   auth.signOut();

@@ -22,7 +22,7 @@ const BookDetail = () => {
     const fetchBookDetails = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:5000/api/books/${id}`
+          process.env.REACT_APP_BACKEND_URL + `/books/${id}`
         );
         setBookDetails(response.data.book);
       } catch (err) {
@@ -79,7 +79,11 @@ const BookDetail = () => {
                 <Typography variant="body2" color="text.secondary">
                   {bookDetails && bookDetails.author}
                 </Typography>
-                <Rating name="read-only" value={bookDetails && bookDetails.star} readOnly />
+                <Rating
+                  name="read-only"
+                  value={bookDetails && bookDetails.star}
+                  readOnly
+                />
                 <Typography
                   variant="body2"
                   color="text.secondary"
@@ -108,47 +112,6 @@ const BookDetail = () => {
             </Grid>
           </Grid>
         </Card>
-        {/* <Box
-          sx={{
-            border: "2px solid #000",
-            borderRadius: 10,
-            display: "flex",
-            flexDirection: "column",
-            backgroundColor: "#FFF",
-            padding: "20px",
-            minHeight: "82vh"
-          }}
-        >
-          <Box sx={{ marginTop: "100px" }}>
-      <img
-        src={bookDetails && bookDetails.image}
-        alt={bookDetails && bookDetails.name}
-        style={{ width: "200px", height: "auto" }}
-      />
-    </Box>
-    <Box sx={{ display: "flex", flexDirection: "column", flex: 1, textAlign: "center" }}>
-      <Typography variant="h4" component="h2">
-        {bookDetails && bookDetails.name}
-      </Typography>
-      <Typography variant="subtitle1" component="p" gutterBottom>
-        {bookDetails && bookDetails.author}
-      </Typography>
-      <Typography variant="body1" component="p" sx={{
-    maxWidth: "300px", // İstediğiniz genişliği burada belirleyebilirsiniz
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-    whiteSpace: "nowrap",
-  }}>
-        {bookDetails && bookDetails.description}
-      </Typography>
-      <Typography variant="body1" component="p">
-        {bookDetails && bookDetails.publisher}
-      </Typography>
-      <Typography variant="body1" component="p">
-        {bookDetails && bookDetails.page}
-      </Typography>
-    </Box>
-  </Box> */}
       </Container>
     </React.Fragment>
   );

@@ -1,10 +1,10 @@
 const Book = require("../models/book-schema");
 const User = require("../models/users-schema");
 const Favorite = require("../models/favorites-schema");
-
+const HttpError = require("../models/http-error");
 const addBook = async (req, res, next) => {
   const {
-    _id,
+    userId,
     name,
     author,
     publisher,
@@ -15,13 +15,14 @@ const addBook = async (req, res, next) => {
     pages,
   } = req.body;
   try {
-    const userId = _id;
     const user = await User.findById(userId);
 
     if (!user || !user.canAddBook) {
-      return res
-        .status(401)
-        .json({ message: "You have submitted an unauthorized request." });
+      const error = new HttpError(
+        'You have submitted an unauthorized request.',
+        401
+      );
+      return next(error);
     }
 
     const book = new Book({
@@ -36,13 +37,12 @@ const addBook = async (req, res, next) => {
     });
 
     await book.save();
-    console.log("New book added.");
     user.addedBooks.push(book._id);
     await user.save();
     res.status(201).json({ message: "Book added.", book: book });
   } catch (err) {
-    console.log(err);
-    res.status(500).json({ message: "Something went wrong!" });
+    const error = new HttpError('The book could not be added. Please try again later.', 500);
+      return next(error);
   }
 };
 
@@ -51,15 +51,15 @@ const deleteBook = async (req, res, next) => {
     const bookId = req.params.id;
     const deletedBook = await Book.findByIdAndDelete(bookId);
     if (!deletedBook) {
-      return res
-        .status(404)
-        .send("The information of the book to be deleted could not be found.");
+      const error = new HttpError('The information of the book to be deleted could not be found.', 404);
+      return next(error);
     }
     await Favorite.deleteMany({ bookId: bookId });
 
     res.status(200).send("Book deleted");
   } catch (err) {
-    next(err);
+    const error = new HttpError('The book could not be deleted. Please try again later.', 500);
+      return next(error);
   }
 };
 
@@ -67,11 +67,13 @@ const getBooks = async (req, res, next) => {
   try {
     const books = await Book.find();
     if (!books) {
-      throw new HttpError("Could not find books.", 404);
+      const error = new HttpError('Could not find books.', 404);
+      return next(error);
     }
     res.json({ books: books });
   } catch (err) {
-    next(err);
+    const error = new HttpError('Books could not be brought. Please try again later.', 500);
+      return next(error);
   }
 };
 
@@ -81,7 +83,8 @@ const getBookById = async (req, res, next) => {
     const book = await Book.findById(bookId);
 
     if (!book) {
-      throw new HttpError("Could not find a book with the provided ID.", 404);
+      const error = new HttpError('Could not find a book with the provided ID.', 404);
+      return next(error);
     }
 
     res.json({ book: book });
@@ -100,28 +103,31 @@ const addFavoriteBook = async (req, res, next) => {
   Favorite.findOne({ userId: userId, bookId: bookId })
     .then(function (like) {
       if (like) {
-        // Daha önce beğenilmiş bir kitap
+        // The book has already been liked
         Favorite.findByIdAndRemove(like._id)
           .then(function () {
             res.json({ liked: false });
           })
           .catch(function (err) {
-            throw err;
+            const error = new HttpError('Something went wrong.', 500);
+      return next(error);
           });
       } else {
-        // Yeni bir beğeni kaydı oluşturun
+        // Create a new like save
         newLike
           .save()
           .then(function () {
             res.json({ liked: true });
           })
           .catch(function (err) {
-            throw err;
+            const error = new HttpError('Failed to save book to favorites.', 500);
+      return next(error);
           });
       }
     })
     .catch(function (err) {
-      throw err;
+      const error = new HttpError('The book could not be added to favourites. Please try again later.', 500);
+      return next(error);
     });
 };
 
@@ -137,7 +143,8 @@ const getFavoriteBooks = async (req, res, next) => {
       res.json({ favoritebooks: books });
     })
     .catch(function (err) {
-      throw err;
+      const error = new HttpError('Failed to fetch favourites. Please try again later.', 500);
+      return next(error);
     });
 };
 

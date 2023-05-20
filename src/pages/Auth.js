@@ -17,7 +17,6 @@ import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import InputAdornment from "@mui/material/InputAdornment";
 import IconButton from "@mui/material/IconButton";
 import FormControl from "@mui/material/FormControl";
-import FacebookIcon from "@mui/icons-material/Facebook";
 import OutlinedInput from "@mui/material/OutlinedInput";
 import InputLabel from "@mui/material/InputLabel";
 import Loading from "../Components/Loading";
@@ -314,16 +313,6 @@ function Login() {
                         variant="caption"
                       >
                         GOOGLE İLE GİRİŞ YAP
-                      </Typography>
-                    </Button>
-                    <Button variant="outlined">
-                      <FacebookIcon />
-                      &nbsp;{" "}
-                      <Typography
-                        sx={{ color: "black", fontWeight: "bold" }}
-                        variant="caption"
-                      >
-                        Facebook İLE GİRİŞ YAP
                       </Typography>
                     </Button>
                   </Box>
