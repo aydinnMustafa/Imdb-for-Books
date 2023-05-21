@@ -24,6 +24,7 @@ import Loading from "../Components/Loading";
 import { FormHelperText } from "@mui/material";
 import Switch from "@mui/material/Switch";
 import Stack from "@mui/material/Stack";
+import useMediaQuery from "@mui/material/useMediaQuery";
 
 import { loginFunc, registerFunc, googleLogin } from "../firebase";
 
@@ -178,7 +179,7 @@ function Login() {
     googleLogin(auth, history);
   };
 
-  // İNPUTLAR VE ANİMATİON TEXT RESPONSİVE DEĞİL.
+  const isSmallScreen = useMediaQuery("(max-width: 600px)");
   return (
     <React.Fragment>
       <ParticlesBackground />
@@ -186,6 +187,7 @@ function Login() {
       {loading === true && <Loading asOverlay />}
 
       <Container component="main" maxWidth="lg">
+      {!isSmallScreen && (
         <Typography
           sx={{ position: "absolute", top: 40, left: 400, fontSize: "25px" }}
         >
@@ -202,9 +204,10 @@ function Login() {
             deleteSpeed={25}
           />
         </Typography>
+      )}
         <Box
           sx={{
-            marginTop: 10,
+            marginTop: isSmallScreen ? 4 : 10,
           }}
         >
           <Grid container>
@@ -228,7 +231,7 @@ function Login() {
 
             <Grid
               item
-              xs={12}
+              xs={11}
               sm={8}
               md={5}
               component={Paper}
@@ -243,7 +246,7 @@ function Login() {
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
-                  height: "70vh",
+                  height: isSmallScreen ? "77vh" : "70vh",
                 }}
               >
                 <Stack direction="row" alignItems="center">
@@ -251,15 +254,15 @@ function Login() {
                     checked={!isLoginMode}
                     onChange={() => switchModeHandler()}
                     sx={{
-                      width: "50ch",
-                      height: "100px",
+                      width: isSmallScreen ? "33ch" :"50ch",
+                      height: isSmallScreen ? "70px" : "100px",
                       "& .MuiSwitch-root.Mui-checked": {
                         bgcolor: "#21cc89",
                       },
 
-                      "& .MuiSwitch-thumb": {
-                        width: "96px",
-                        height: "90px",
+                      "& .MuiSwitch-thumb": { 
+                        width: isSmallScreen ? "70px" : "96px",
+                        height: isSmallScreen ? "50px" : "90px",
                         bgcolor: "#fff",
                       },
                       "& .MuiSwitch-track": {
@@ -272,21 +275,22 @@ function Login() {
                         },
 
                       "& .MuiSwitch-switchBase.Mui-checked": {
-                        transform: "translateX(330px)",
+                        transform: isSmallScreen ? "translateX(205px)" :"translateX(330px)",
                       },
                     }}
                   />
 
                   <Typography
-                    variant="h5"
+                    variant={isSmallScreen ? "h7" : "h5" }
                     sx={{
                       position: "absolute",
-                      marginLeft: 20,
+                      marginLeft: isSmallScreen ? 16 : 20,
                     }}
                   >
                     {isLoginMode ? "GİRİŞ" : "KAYIT"}
                   </Typography>
                 </Stack>
+
                 <Box
                   component="form"
                   noValidate
@@ -319,7 +323,7 @@ function Login() {
                   {!isLoginMode && (
                     <div>
                       <FormControl
-                        sx={{ mt: 0.5, width: "50ch", paddingBottom: 0.5 }}
+                        sx={{ mt: 0.5, width: isSmallScreen ? "32ch" : "50ch", paddingBottom: 0.5 }}
                         variant="outlined"
                         error={errorMessages.name ? true : false}
                       >
@@ -338,7 +342,7 @@ function Login() {
                         <FormHelperText>{errorMessages.name}</FormHelperText>
                       </FormControl>
                       <FormControl
-                        sx={{ mt: 0.5, width: "50ch", paddingBottom: 0.5 }}
+                        sx={{ mt: 0.5, width: isSmallScreen ? "32ch" : "50ch", paddingBottom: 0.5 }}
                         variant="outlined"
                         error={errorMessages.surname ? true : false}
                       >
@@ -358,9 +362,13 @@ function Login() {
                       </FormControl>
                     </div>
                   )}
-
                   <FormControl
-                    sx={{ mt: 0.5, width: "50ch", paddingBottom: 0.5 }}
+                    sx={{
+                      mt: 0.5,
+                      paddingBottom: 0.5,
+                      width: isSmallScreen ? "32ch" : "50ch",
+                      
+                    }}
                     variant="outlined"
                     error={errorMessages.email_adress ? true : false}
                   >
@@ -382,7 +390,11 @@ function Login() {
                   </FormControl>
 
                   <FormControl
-                    sx={{ mt: 0.5, width: "50ch" }}
+                    sx={{
+                      mt: 0.5,
+                      width: isSmallScreen ? "32ch" : "50ch",
+                      
+                    }}
                     variant="outlined"
                     error={errorMessages.password ? true : false}
                   >

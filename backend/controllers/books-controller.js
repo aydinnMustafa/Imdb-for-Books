@@ -132,20 +132,36 @@ const addFavoriteBook = async (req, res, next) => {
 };
 
 const getFavoriteBooks = async (req, res, next) => {
-  const { userId } = req.body;
-  Favorite.find({ userId: userId })
-    .populate("bookId")
-    .then(function (results) {
-      const books = results.map(function (like) {
-        // To distinguish only books from the likes list
-        return like.bookId;
-      });
-      res.json({ favoritebooks: books });
-    })
-    .catch(function (err) {
-      const error = new HttpError('Failed to fetch favourites. Please try again later.', 500);
+  try {
+    const { userId } = req.body;
+
+    if (!userId) {
+      const error = new HttpError('User ID not found.', 404);
       return next(error);
-    });
+    }
+
+    Favorite.find({ userId: userId })
+      .populate("bookId")
+      .then(function (results) {
+        const books = results.map(function (like) {
+          return like.bookId;
+        });
+        res.json({ favoritebooks: books });
+      })
+      .catch(function (err) {
+        const error = new HttpError(
+          'Failed to fetch favourites. Please try again later.',
+          500
+        );
+        return next(error);
+      });
+  } catch (err) {
+    const error = new HttpError(
+      'Something went wrong. Please try again later.',
+      500
+    );
+    return next(error);
+  }
 };
 
 exports.addBook = addBook;

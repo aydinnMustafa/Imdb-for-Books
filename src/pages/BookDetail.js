@@ -9,6 +9,7 @@ import {
   CardContent,
   Rating,
   Grid,
+  useMediaQuery
 } from "@mui/material";
 
 import Loading from "../Components/Loading";
@@ -31,7 +32,7 @@ const BookDetail = () => {
     };
     fetchBookDetails();
   }, [id]);
-  console.log(bookDetails);
+  const isSmallScreen = useMediaQuery("(max-width: 600px)");
   return (
     <React.Fragment>
       <Navbar />
@@ -51,12 +52,12 @@ const BookDetail = () => {
             >
               <CardMedia
                 component="img"
-                height={635}
+                height={isSmallScreen ? 400 : 635}
                 image={bookDetails && bookDetails.image}
                 alt="The Catcher in the Rye"
                 sx={{
                   objectFit: "contain",
-                  marginRight: 10,
+                  marginRight: isSmallScreen ? 6 : 10,
                   marginTop: 1,
                   marginBottom: "3px",
                 }}

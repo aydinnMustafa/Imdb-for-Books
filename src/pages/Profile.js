@@ -16,6 +16,8 @@ import Stack from "@mui/material/Stack";
 import OutlinedInput from "@mui/material/OutlinedInput";
 import InputLabel from "@mui/material/InputLabel";
 import Avatar from "@mui/material/Avatar";
+import useMediaQuery from "@mui/material/useMediaQuery";
+
 import axios from "axios";
 
 import {
@@ -34,10 +36,12 @@ import Navbar from "../Components/Navbar";
 function Profile() {
   const currentUser = auth.currentUser;
   const history = useHistory();
-  const [showPassword, setShowPassword] = useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState();
-  const handleClickShowPassword = () => setShowPassword((show) => !show);
+  const handleClickCurrentShowPassword = () => setShowCurrentPassword((show) => !show);
+  const handleClickNewShowPassword = () => setShowNewPassword((show) => !show);
   const handleMouseDownPassword = (event) => {
     event.preventDefault();
   };
@@ -160,7 +164,7 @@ function Profile() {
       console.log("Form hatalı!");
     }
   };
-
+  const isSmallScreen = useMediaQuery("(max-width: 600px)");
   return (
     <React.Fragment>
       <Navbar />
@@ -180,7 +184,7 @@ function Profile() {
 
             <Grid
               item
-              xs={12}
+              xs={11}
               sm={8}
               md={5}
               component={Paper}
@@ -201,10 +205,16 @@ function Profile() {
                   flexDirection: "column",
                   alignItems: "center",
                   width: "100%",
-                  height: "70vh",
+                  height: isSmallScreen ? "67vh" : "70vh",
                 }}
               >
-                <Avatar sx={{ width: 200, height: 200, marginTop: -5 }} />
+                <Avatar
+                  sx={{
+                    width: isSmallScreen ? 100 : 200,
+                    height: isSmallScreen ? 100 : 200,
+                    marginTop: -5,
+                  }}
+                />
                 <Box
                   component="form"
                   noValidate
@@ -212,7 +222,11 @@ function Profile() {
                   sx={{ mt: 1, width: "100%" }}
                 >
                   <FormControl
-                    sx={{ mt: 0.5, width: "50ch", paddingBottom: 0.5 }}
+                    sx={{
+                      mt: 0.5,
+                      width: isSmallScreen ? "32ch" : "50ch",
+                      paddingBottom: 0.5,
+                    }}
                     variant="outlined"
                     error={errorMessages.fullname ? true : false}
                   >
@@ -232,7 +246,11 @@ function Profile() {
                     <FormHelperText>{errorMessages.fullname}</FormHelperText>
                   </FormControl>
                   <FormControl
-                    sx={{ mt: 0.5, width: "50ch", paddingBottom: 0.5 }}
+                    sx={{
+                      mt: 0.5,
+                      width: isSmallScreen ? "32ch" : "50ch",
+                      paddingBottom: 0.5,
+                    }}
                     variant="outlined"
                     error={errorMessages.email_adress ? true : false}
                   >
@@ -255,7 +273,7 @@ function Profile() {
                   </FormControl>
 
                   <FormControl
-                    sx={{ mt: 0.5, width: "50ch" }}
+                    sx={{ mt: 0.5, width: isSmallScreen ? "32ch" : "50ch" }}
                     variant="outlined"
                     error={errorMessages.currentPassword ? true : false}
                   >
@@ -265,7 +283,7 @@ function Profile() {
                     <OutlinedInput
                       id="currentPassword"
                       name="currentPassword"
-                      type={showPassword ? "text" : "password"}
+                      type={showCurrentPassword ? "text" : "password"}
                       autoFocus
                       required
                       onChange={handleChange}
@@ -273,11 +291,11 @@ function Profile() {
                         <InputAdornment position="end">
                           <IconButton
                             aria-label="toggle password visibility"
-                            onClick={handleClickShowPassword}
+                            onClick={handleClickCurrentShowPassword}
                             onMouseDown={handleMouseDownPassword}
                             edge="end"
                           >
-                            {showPassword ? <VisibilityOff /> : <Visibility />}
+                            {showCurrentPassword ? <VisibilityOff /> : <Visibility />}
                           </IconButton>
                         </InputAdornment>
                       }
@@ -289,7 +307,7 @@ function Profile() {
                   </FormControl>
 
                   <FormControl
-                    sx={{ mt: 0.5, width: "50ch" }}
+                    sx={{ mt: 0.5, width: isSmallScreen ? "32ch" : "50ch" }}
                     variant="outlined"
                     error={errorMessages.newPassword ? true : false}
                   >
@@ -299,7 +317,7 @@ function Profile() {
                     <OutlinedInput
                       id="newPassword"
                       name="newPassword"
-                      type={showPassword ? "text" : "password"}
+                      type={showNewPassword ? "text" : "password"}
                       autoFocus
                       required
                       onChange={handleChange}
@@ -307,11 +325,11 @@ function Profile() {
                         <InputAdornment position="end">
                           <IconButton
                             aria-label="toggle password visibility"
-                            onClick={handleClickShowPassword}
+                            onClick={handleClickNewShowPassword}
                             onMouseDown={handleMouseDownPassword}
                             edge="end"
                           >
-                            {showPassword ? <VisibilityOff /> : <Visibility />}
+                            {showNewPassword ? <VisibilityOff /> : <Visibility />}
                           </IconButton>
                         </InputAdornment>
                       }
