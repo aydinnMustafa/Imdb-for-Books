@@ -17,7 +17,7 @@ import OutlinedInput from "@mui/material/OutlinedInput";
 import InputLabel from "@mui/material/InputLabel";
 import Avatar from "@mui/material/Avatar";
 import useMediaQuery from "@mui/material/useMediaQuery";
-
+import DefaultAvatar from '../assets/default-avatar.jpg';
 import axios from "axios";
 
 import {
@@ -209,6 +209,7 @@ function Profile() {
                 }}
               >
                 <Avatar
+                src={DefaultAvatar}
                   sx={{
                     width: isSmallScreen ? 100 : 200,
                     height: isSmallScreen ? 100 : 200,

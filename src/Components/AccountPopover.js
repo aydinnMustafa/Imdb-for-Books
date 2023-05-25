@@ -11,6 +11,7 @@ import {
   IconButton,
   Popover,
 } from "@mui/material";
+import DefaultAvatar from '../assets/default-avatar.jpg';
 
 import { useSelector, useDispatch } from "react-redux";
 import { useHistory, Link } from "react-router-dom";
@@ -55,7 +56,7 @@ export default function AccountPopover() {
           }),
         }}
       >
-        <Avatar sx={{ bgcolor: blueGrey[500] }} />
+        <Avatar src={DefaultAvatar} sx={{ width: 50, height: 50 }} />
       </IconButton>
 
       <Popover
