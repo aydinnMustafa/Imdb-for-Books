@@ -35,6 +35,7 @@ function NavItem({ item }) {
   return (
     <StyledNavItem
       component={RouterLink}
+      exact
       to={path}
       sx={{
         '&.active': {

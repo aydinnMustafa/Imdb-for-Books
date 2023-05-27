@@ -2,7 +2,6 @@ import React from "react";
 import { AppBar, Toolbar, styled, Box, Typography, Link } from "@mui/material";
 import AutoStoriesIcon from "@mui/icons-material/AutoStories";
 
-
 import AccountPopover from "./AccountPopover";
 
 const Navbar = () => {
@@ -27,9 +26,22 @@ const Navbar = () => {
       }}
     >
       <StyledToolbar>
-        <Box>
+        <Link sx={{
+                  cursor: "pointer",
+                  color: "#fff",
+                  textDecoration: "none",
+                }}
+                href="/books">
+        <Box display="flex" alignItems="center">
           <AutoStoriesIcon />
+          <Box marginLeft={1}>
+            <Typography variant="h7" style={{ fontFamily: "Lobster" }}>
+              <span style={{ display: "block" }}>Imdb</span>
+              <span style={{ display: "block", marginLeft: 5 }}>For Books</span>
+            </Typography>
+          </Box>
         </Box>
+        </Link>
         <MenuBox>
           {MenuItems.map((item) => (
             <Typography key={item.id}>

@@ -13,6 +13,7 @@ const router = express.Router();
 
 router.post('/signup', usersController.signup);
 router.patch('/:uid',usersController.updateUser)
+router.get('/',usersController.getUsers);
 // router.post('/login');
 router.use(auth);
 

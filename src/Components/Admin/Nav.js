@@ -15,7 +15,7 @@ import { selectUser } from '../../features/userSlice';
 
 import { SupervisedUserCircle, LibraryBooks,Analytics } from '@mui/icons-material';
 import DefaultAvatar from '../../assets/default-avatar.jpg';
-
+import Logo from '../../assets/logo.png';
 
 // ----------------------------------------------------------------------
 
@@ -39,7 +39,7 @@ Nav.propTypes = {
 const navConfig = [
   {
     title: 'dashboard',
-    path: '/admin/dashboard',
+    path: '/admin',
     icon: <Analytics />
   },
   {
@@ -71,7 +71,7 @@ const navConfig = [
   const renderContent = (
     <>
       <Box sx={{ px: 2.5, py: 3, display: 'inline-flex' }}>
-        <div>Logo</div>
+      <img src={Logo} alt="Imdb-For-Books"  />
       </Box>
 
       <Box sx={{ mb: 2, mx: 2.5 }}>
