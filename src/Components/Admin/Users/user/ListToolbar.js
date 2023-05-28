@@ -3,14 +3,11 @@ import PropTypes from "prop-types";
 import { styled, alpha } from "@mui/material/styles";
 import {
   Toolbar,
-  Tooltip,
-  IconButton,
-  Typography,
   OutlinedInput,
   InputAdornment,
 } from "@mui/material";
 // component
-import { Search, Delete } from "@mui/icons-material";
+import { Search } from "@mui/icons-material";
 // ----------------------------------------------------------------------
 
 const StyledRoot = styled(Toolbar)(({ theme }) => ({
@@ -44,11 +41,7 @@ ListToolbar.propTypes = {
   onFilterName: PropTypes.func,
 };
 
-export default function ListToolbar({
-  numSelected,
-  filterName,
-  onFilterName,
-}) {
+export default function ListToolbar({ numSelected, filterName, onFilterName }) {
   return (
     <StyledRoot
       sx={{
@@ -58,30 +51,16 @@ export default function ListToolbar({
         }),
       }}
     >
-      {numSelected > 0 ? (
-        <Typography component="div" variant="subtitle1">
-          {numSelected} selected
-        </Typography>
-      ) : (
-        <StyledSearch
-          value={filterName}
-          onChange={onFilterName}
-          placeholder="Search user..."
-          startAdornment={
-            <InputAdornment position="start">
-              <Search />
-            </InputAdornment>
-          }
-        />
-      )}
-
-      {numSelected > 0 && (
-        <Tooltip title="Delete">
-          <IconButton>
-            <Delete />
-          </IconButton>
-        </Tooltip>
-      )}
+      <StyledSearch
+        value={filterName}
+        onChange={onFilterName}
+        placeholder="Search user..."
+        startAdornment={
+          <InputAdornment position="start">
+            <Search />
+          </InputAdornment>
+        }
+      />
     </StyledRoot>
   );
 }

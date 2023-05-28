@@ -8,7 +8,6 @@ import {
   Paper,
   Avatar,
   Popover,
-  Checkbox,
   TableRow,
   MenuItem,
   TableBody,
@@ -93,6 +92,13 @@ export default function UsersPage() {
     fetchUsers();
   }, []);
 
+  const userDelete = async () => {
+    const selectedUser = selected[0];
+    try {
+      console.log(selectedUser);
+    } catch (err) {}
+  };
+
   const handleOpenMenu = (event) => {
     setOpen(event.currentTarget);
   };
@@ -116,12 +122,12 @@ export default function UsersPage() {
 
     setSelected([]);
   };
-  console.log(selected);
-  const handleClick = (event, fullname) => {
-    const selectedIndex = selected.indexOf(fullname);
+
+  const handleClick = (event, _id) => {
+    const selectedIndex = selected.indexOf(_id);
     let newSelected = [];
     if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selected, fullname);
+      newSelected = newSelected.concat(selected, _id);
     } else if (selectedIndex === 0) {
       newSelected = newSelected.concat(selected.slice(1));
     } else if (selectedIndex === selected.length - 1) {
@@ -190,14 +196,14 @@ export default function UsersPage() {
                 numSelected={selected.length}
                 onRequestSort={handleRequestSort}
                 onSelectAllClick={handleSelectAllClick}
+
               />
               <TableBody>
                 {filteredUsers
                   .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                   .map((row) => {
                     const { fullname, role, email, _id } = row;
-                    const selectedUser = selected.indexOf(fullname) !== -1;
-                    console.log(selectedUser);
+                    const selectedUser = selected.indexOf(_id) !== -1;
 
                     return (
                       <TableRow
@@ -207,14 +213,7 @@ export default function UsersPage() {
                         role="checkbox"
                         selected={selectedUser}
                       >
-                        <TableCell padding="checkbox">
-                          <Checkbox
-                            checked={selectedUser}
-                            onChange={(event) => handleClick(event, fullname)}
-                          />
-                        </TableCell>
-
-                        <TableCell component="th" scope="row" padding="none">
+                        <TableCell component="th" scope="row" padding="normal">
                           <Stack
                             direction="row"
                             alignItems="center"
@@ -241,7 +240,10 @@ export default function UsersPage() {
                           <IconButton
                             size="large"
                             color="inherit"
-                            onClick={handleOpenMenu}
+                            onClick={(event) => {
+                              handleOpenMenu(event);
+                              handleClick(event, _id);
+                            }}
                           >
                             <MoreVert />
                           </IconButton>
@@ -297,7 +299,10 @@ export default function UsersPage() {
       <Popover
         open={Boolean(open)}
         anchorEl={open}
-        onClose={handleCloseMenu}
+        onClose={() => {
+          handleCloseMenu();
+          setSelected([]);
+        }}
         anchorOrigin={{ vertical: "top", horizontal: "left" }}
         transformOrigin={{ vertical: "top", horizontal: "right" }}
         PaperProps={{
@@ -317,7 +322,7 @@ export default function UsersPage() {
           Edit
         </MenuItem>
 
-        <MenuItem sx={{ color: "error.main" }}>
+        <MenuItem onClick={userDelete} sx={{ color: "error.main" }}>
           <Delete />
           Delete
         </MenuItem>

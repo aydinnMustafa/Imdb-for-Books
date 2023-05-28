@@ -7,7 +7,6 @@ import {
   Stack,
   Paper,
   Popover,
-  Checkbox,
   TableRow,
   MenuItem,
   TableBody,
@@ -89,7 +88,6 @@ export default function UsersPage() {
     };
     fetchBooks();
   }, []);
-  
 
   const handleOpenMenu = (event) => {
     setOpen(event.currentTarget);
@@ -115,11 +113,11 @@ export default function UsersPage() {
     setSelected([]);
   };
   console.log(selected);
-  const handleClick = (event, name) => {
-    const selectedIndex = selected.indexOf(name);
+  const handleClick = (event, _id) => {
+    const selectedIndex = selected.indexOf(_id);
     let newSelected = [];
     if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selected, name);
+      newSelected = newSelected.concat(selected, _id);
     } else if (selectedIndex === 0) {
       newSelected = newSelected.concat(selected.slice(1));
     } else if (selectedIndex === selected.length - 1) {
@@ -148,9 +146,11 @@ export default function UsersPage() {
   };
 
   if (!loadedBooks || loadedBooks.length === 0) {
-    return <div style={{ marginLeft: 500 }}>
-    <Loading />
-  </div>
+    return (
+      <div style={{ marginLeft: 500 }}>
+        <Loading />
+      </div>
+    );
   }
 
   const emptyRows =
@@ -192,7 +192,7 @@ export default function UsersPage() {
                   .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                   .map((row) => {
                     const { name, pages, author, _id } = row;
-                    const selectedUser = selected.indexOf(name) !== -1;
+                    const selectedUser = selected.indexOf(_id) !== -1;
 
                     return (
                       <TableRow
@@ -202,14 +202,8 @@ export default function UsersPage() {
                         role="checkbox"
                         selected={selectedUser}
                       >
-                        <TableCell padding="checkbox">
-                          <Checkbox
-                            checked={selectedUser}
-                            onChange={(event) => handleClick(event, name)}
-                          />
-                        </TableCell>
 
-                        <TableCell component="th" scope="row" padding="none">
+                        <TableCell component="th" scope="row" padding="normal">
                           <Stack
                             direction="row"
                             alignItems="center"
@@ -231,7 +225,10 @@ export default function UsersPage() {
                           <IconButton
                             size="large"
                             color="inherit"
-                            onClick={handleOpenMenu}
+                            onClick={(event) => {
+                              handleOpenMenu(event);
+                              handleClick(event, _id);
+                            }}
                           >
                             <MoreVert />
                           </IconButton>
@@ -287,7 +284,10 @@ export default function UsersPage() {
       <Popover
         open={Boolean(open)}
         anchorEl={open}
-        onClose={handleCloseMenu}
+        onClose={() => {
+          handleCloseMenu();
+          setSelected([]);
+        }}
         anchorOrigin={{ vertical: "top", horizontal: "left" }}
         transformOrigin={{ vertical: "top", horizontal: "right" }}
         PaperProps={{
