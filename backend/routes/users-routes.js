@@ -12,7 +12,8 @@ const router = express.Router();
 
 
 router.post('/signup', usersController.signup);
-router.patch('/:uid',usersController.updateUser)
+router.patch('/:uid',usersController.updateUser);
+router.delete('/:uid', usersController.deleteUser);
 router.get('/',usersController.getUsers);
 // router.post('/login');
 router.use(auth);

@@ -129,17 +129,18 @@ function Profile() {
         );
         await reauthenticateWithCredential(auth.currentUser, credential);
 
-        updateProfile(currentUser, {
-          displayName: userData.fullname,
-        });
+        // updateProfile(currentUser, {
+        //   displayName: userData.fullname,
+        // });
 
-        await updateEmail(currentUser, userData.email_adress);
-        await updatePassword(currentUser, userData.newPassword);
+        // await updateEmail(currentUser, userData.email_adress);
+        // await updatePassword(currentUser, userData.newPassword);
         axios.patch(
           process.env.REACT_APP_BACKEND_URL + `/users/${currentUser.uid}`,
           {
             fullname: userData.fullname,
             email: userData.email_adress,
+            password: userData.newPassword
           },
           {
             headers: {
@@ -147,7 +148,7 @@ function Profile() {
             },
           }
         );
-        history.push("/books");
+        history.push("/auth");
         console.log("Profile updated.");
       } catch (error) {
         const errorCode = error.code;

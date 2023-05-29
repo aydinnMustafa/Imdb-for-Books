@@ -40,7 +40,6 @@ const BookList = () => {
         }
       );
       const favoritesBooksObj = {};
-      console.log(response.data.favoritebooks);
       response.data.favoritebooks.forEach((favorite) => {
         favoritesBooksObj[favorite._id] = true;
       });

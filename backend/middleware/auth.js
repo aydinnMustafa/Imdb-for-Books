@@ -12,7 +12,7 @@ const auth = async (req, res, next) => {
       if (!user) {
         throw "User not found!";
       }
-      const role = user.role || "user";
+      const role = user.role || "User";
      
 
     const token = req.headers.authorization.split(" ")[1];

@@ -17,8 +17,11 @@ import {
   IconButton,
   TableContainer,
   TablePagination,
+  Modal,
+  Box,
+  Button,
 } from "@mui/material";
-import { MoreVert, Edit, Delete } from "@mui/icons-material";
+import { MoreVert, Edit, Delete, Cancel } from "@mui/icons-material";
 import Loading from "../../Components/Loading";
 
 // sections
@@ -70,6 +73,7 @@ function applySortFilter(array, comparator, query) {
 
 export default function UsersPage() {
   const [open, setOpen] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
   const [page, setPage] = useState(0);
   const [order, setOrder] = useState("asc");
   const [selected, setSelected] = useState([]);
@@ -79,24 +83,35 @@ export default function UsersPage() {
   const [loadedUsers, setLoadedUsers] = useState();
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const response = await axios.get(
-          process.env.REACT_APP_BACKEND_URL + "/users/"
-        );
-        setLoadedUsers(response.data.users);
-      } catch (err) {
-        console.error(err);
-      }
-    };
     fetchUsers();
   }, []);
 
-  const userDelete = async () => {
-    const selectedUser = selected[0];
+  const fetchUsers = async () => {
     try {
-      console.log(selectedUser);
-    } catch (err) {}
+      const response = await axios.get(
+        process.env.REACT_APP_BACKEND_URL + "/users/"
+      );
+      setLoadedUsers(response.data.users);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+  
+
+  const handleDelete = async () => {
+    const selectedUser = selected[0];
+
+    try {
+      await axios.delete(
+        process.env.REACT_APP_BACKEND_URL + `/users/${selectedUser}`
+      );
+      setModalOpen(false);
+      setOpen(null);
+      setSelected([]);
+      fetchUsers();
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const handleOpenMenu = (event) => {
@@ -111,16 +126,6 @@ export default function UsersPage() {
     const isAsc = orderBy === property && order === "asc";
     setOrder(isAsc ? "desc" : "asc");
     setOrderBy(property);
-  };
-
-  const handleSelectAllClick = (event) => {
-    if (event.target.checked) {
-      const newSelecteds = loadedUsers.map((n) => n.fullname);
-      setSelected(newSelecteds);
-      return;
-    }
-
-    setSelected([]);
   };
 
   const handleClick = (event, _id) => {
@@ -195,8 +200,6 @@ export default function UsersPage() {
                 rowCount={loadedUsers.length}
                 numSelected={selected.length}
                 onRequestSort={handleRequestSort}
-                onSelectAllClick={handleSelectAllClick}
-
               />
               <TableBody>
                 {filteredUsers
@@ -322,10 +325,68 @@ export default function UsersPage() {
           Edit
         </MenuItem>
 
-        <MenuItem onClick={userDelete} sx={{ color: "error.main" }}>
+        <MenuItem
+          onClick={() => setModalOpen(true)}
+          sx={{ color: "error.main" }}
+        >
           <Delete />
           Delete
         </MenuItem>
+
+        <Modal
+          open={modalOpen}
+          aria-labelledby="delete-modal-title"
+          aria-describedby="delete-modal-description"
+        >
+          <Box
+            sx={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              width: 400,
+              bgcolor: "background.paper",
+              borderRadius: 8,
+              boxShadow: 24,
+              p: 4,
+            }}
+          >
+            <h2 id="delete-modal-title" style={{ marginTop: -8 }}>
+              Are you sure you want to delete this user?
+            </h2>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                marginTop: "auto",
+              }}
+            >
+              <Button
+                onClick={handleDelete}
+                variant="contained"
+                startIcon={<Delete />}
+                sx={{
+                  mr: 10,
+                  backgroundColor: "red",
+                  "&:hover": { backgroundColor: "#dd3333" },
+                }}
+              >
+                DELETE
+              </Button>
+              <Button
+                onClick={() => setModalOpen(false)}
+                variant="contained"
+                startIcon={<Cancel />}
+                sx={{
+                  backgroundColor: "grey.600",
+                  "&:hover": { backgroundColor: "grey.700" },
+                }}
+              >
+                CANCEL
+              </Button>
+            </Box>
+          </Box>
+        </Modal>
       </Popover>
     </>
   );

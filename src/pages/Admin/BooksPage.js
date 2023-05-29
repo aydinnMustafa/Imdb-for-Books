@@ -16,8 +16,12 @@ import {
   IconButton,
   TableContainer,
   TablePagination,
+  Box,
+  Button,
+  Modal,
+  TextField,
 } from "@mui/material";
-import { MoreVert, Edit, Delete } from "@mui/icons-material";
+import { MoreVert, Edit, Delete, Update, Cancel } from "@mui/icons-material";
 import Loading from "../../Components/Loading";
 // sections
 import { ListHead, ListToolbar } from "../../Components/Admin/Users/user";
@@ -67,6 +71,7 @@ function applySortFilter(array, comparator, query) {
 
 export default function UsersPage() {
   const [open, setOpen] = useState(null);
+  const [modalOpen, setModalOpen] = useState(true);
   const [page, setPage] = useState(0);
   const [order, setOrder] = useState("asc");
   const [selected, setSelected] = useState([]);
@@ -103,16 +108,6 @@ export default function UsersPage() {
     setOrderBy(property);
   };
 
-  const handleSelectAllClick = (event) => {
-    if (event.target.checked) {
-      const newSelecteds = loadedBooks.map((n) => n.name);
-      setSelected(newSelecteds);
-      return;
-    }
-
-    setSelected([]);
-  };
-  console.log(selected);
   const handleClick = (event, _id) => {
     const selectedIndex = selected.indexOf(_id);
     let newSelected = [];
@@ -185,7 +180,6 @@ export default function UsersPage() {
                 rowCount={loadedBooks.length}
                 numSelected={selected.length}
                 onRequestSort={handleRequestSort}
-                onSelectAllClick={handleSelectAllClick}
               />
               <TableBody>
                 {filteredUsers
@@ -202,7 +196,6 @@ export default function UsersPage() {
                         role="checkbox"
                         selected={selectedUser}
                       >
-
                         <TableCell component="th" scope="row" padding="normal">
                           <Stack
                             direction="row"
@@ -312,6 +305,80 @@ export default function UsersPage() {
           Delete
         </MenuItem>
       </Popover>
+
+      <Modal open={modalOpen}>
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: 1000,
+            maxWidth: "90vw",
+            bgcolor: "background.paper",
+            borderRadius: 8,
+            boxShadow: 24,
+            p: 4,
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          <Box sx={{ display: "flex" }}>
+            <Box sx={{ flex: 1, mr: 2 }}>
+              <TextField label="Name" sx={{ paddingBottom: 1 }} fullWidth />
+              <TextField label="Author" sx={{ paddingBottom: 1 }} fullWidth />
+              <TextField
+                label="Publisher"
+                sx={{ paddingBottom: 1 }}
+                fullWidth
+              />
+              <TextField
+                label="Star"
+                type="number"
+                sx={{ paddingBottom: 1 }}
+                fullWidth
+              />
+              <TextField label="Image" sx={{ paddingBottom: 1 }} fullWidth />
+              <TextField label="Language" sx={{ paddingBottom: 1 }} fullWidth />
+              <TextField label="Pages" sx={{ paddingBottom: 1 }} fullWidth />
+            </Box>
+            <Box sx={{ flex: "3 1" }}>
+              <TextField
+                label="Description"
+                multiline
+                rows={17.7}
+                sx={{ paddingBottom: 1 }}
+                fullWidth
+              />
+            </Box>
+          </Box>
+
+          <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
+            <Button
+              variant="contained"
+              startIcon={<Update />}
+              sx={{
+                mr: 2,
+                backgroundColor: "red",
+                "&:hover": { backgroundColor: "#dd3333" },
+              }}
+            >
+              UPDATE
+            </Button>
+            <Button
+              variant="contained"
+              onClick={() => setModalOpen(false)}
+              startIcon={<Cancel />}
+              sx={{
+                backgroundColor: "grey.600",
+                "&:hover": { backgroundColor: "grey.700" },
+              }}
+            >
+              CANCEL
+            </Button>
+          </Box>
+        </Box>
+      </Modal>
     </>
   );
 }

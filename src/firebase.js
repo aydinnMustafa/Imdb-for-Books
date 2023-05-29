@@ -36,7 +36,6 @@ export const loginFunc = (
   setLoading(true);
   signInWithEmailAndPassword(auth, email, password)
     .then((userAuth) => {
-      console.log(userAuth);
       if (userAuth) {
         history.push("/books");
       }
