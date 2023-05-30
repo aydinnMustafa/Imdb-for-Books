@@ -96,7 +96,6 @@ export default function UsersPage() {
       console.error(err);
     }
   };
-  
 
   const handleDelete = async () => {
     const selectedUser = selected[0];
@@ -227,7 +226,11 @@ export default function UsersPage() {
                               src={fullname}
                               sx={{ bgcolor: "#5C8984" }}
                             />
-                            <Typography variant="subtitle2" noWrap>
+                            <Typography
+                              variant="subtitle2"
+                              noWrap
+                              sx={{ fontWeight: "bold" }}
+                            >
                               {fullname}
                             </Typography>
                           </Stack>

@@ -29,11 +29,8 @@ ListHead.propTypes = {
 export default function ListHead({
   order,
   orderBy,
-  rowCount,
   headLabel,
-  numSelected,
-  onRequestSort,
-  onSelectAllClick,
+  onRequestSort
 }) {
   const createSortHandler = (property) => (event) => {
     onRequestSort(event, property);
@@ -41,9 +38,10 @@ export default function ListHead({
 
   return (
     <TableHead>
-      <TableRow>
+      <TableRow sx={{boxShadow: "2px 2px 4px 2px rgba(0, 0, 0, 0.2)", backgroundColor: '#f2f2f2'}}>
         {headLabel.map((headCell) => (
           <TableCell
+            
             key={headCell.id}
             align={headCell.alignRight ? 'right' : 'left'}
             sortDirection={orderBy === headCell.id ? order : false}

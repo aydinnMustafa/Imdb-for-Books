@@ -46,9 +46,35 @@ const addBook = async (req, res, next) => {
   }
 };
 
+const updateBook = async (req, res, next) => {
+  const { name, author, publisher, star, description, image, language, pages } = req.body;
+  const bookId = req.params.bid;
+  try {
+    const updatedBook = await Book.findByIdAndUpdate(bookId, {
+      name,
+      author,
+      publisher,
+      star,
+      description,
+      image,
+      language,
+      pages
+    });
+
+    if (!updatedBook) {
+     const error = new HttpError('The book could not be found.', 404);
+      return next(error);
+    }
+    res.status(200).send("Book updated.");
+  } catch (err) {
+    const error = new HttpError('The book could not be updated. Please try again.', 500);
+      return next(error);
+  }
+};
+
 const deleteBook = async (req, res, next) => {
   try {
-    const bookId = req.params.id;
+    const bookId = req.params.bid;
     const deletedBook = await Book.findByIdAndDelete(bookId);
     if (!deletedBook) {
       const error = new HttpError('The information of the book to be deleted could not be found.', 404);
@@ -56,7 +82,7 @@ const deleteBook = async (req, res, next) => {
     }
     await Favorite.deleteMany({ bookId: bookId });
 
-    res.status(200).send("Book deleted");
+    res.status(200).send("Book deleted.");
   } catch (err) {
     const error = new HttpError('The book could not be deleted. Please try again later.', 500);
       return next(error);
@@ -165,6 +191,7 @@ const getFavoriteBooks = async (req, res, next) => {
 };
 
 exports.addBook = addBook;
+exports.updateBook = updateBook;
 exports.deleteBook = deleteBook;
 exports.addFavoriteBook = addFavoriteBook;
 exports.getBooks = getBooks;

@@ -20,6 +20,7 @@ import {
   Button,
   Modal,
   TextField,
+  Rating,
 } from "@mui/material";
 import { MoreVert, Edit, Delete, Update, Cancel } from "@mui/icons-material";
 import Loading from "../../Components/Loading";
@@ -69,9 +70,10 @@ function applySortFilter(array, comparator, query) {
   return stabilizedThis.map((el) => el[0]);
 }
 
-export default function UsersPage() {
+export default function BooksPage() {
   const [open, setOpen] = useState(null);
-  const [modalOpen, setModalOpen] = useState(true);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [page, setPage] = useState(0);
   const [order, setOrder] = useState("asc");
   const [selected, setSelected] = useState([]);
@@ -80,19 +82,41 @@ export default function UsersPage() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [loadedBooks, setLoadedBooks] = useState();
 
+  const [bookData, setBookData] = useState({
+    name: "",
+    author: "",
+    publisher: "",
+    star: 1,
+    image: "",
+    language: "",
+    pages: "",
+    description: "",
+  });
+  const [errorMessages, setErrorMessages] = useState({
+    name: null,
+    author: null,
+    publisher: null,
+    star: null,
+    image: null,
+    language: null,
+    pages: null,
+    description: null,
+  });
+
   useEffect(() => {
-    const fetchBooks = async () => {
-      try {
-        const response = await axios.get(
-          process.env.REACT_APP_BACKEND_URL + "/books"
-        );
-        setLoadedBooks(response.data.books);
-      } catch (err) {
-        console.error(err);
-      }
-    };
     fetchBooks();
   }, []);
+
+  const fetchBooks = async () => {
+    try {
+      const response = await axios.get(
+        process.env.REACT_APP_BACKEND_URL + "/books"
+      );
+      setLoadedBooks(response.data.books);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const handleOpenMenu = (event) => {
     setOpen(event.currentTarget);
@@ -100,12 +124,114 @@ export default function UsersPage() {
 
   const handleCloseMenu = () => {
     setOpen(null);
+    setBookData({
+      name: "",
+      author: "",
+      publisher: "",
+      star: 1,
+      image: "",
+      language: "",
+      pages: "",
+      description: "",
+    });
   };
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === "asc";
     setOrder(isAsc ? "desc" : "asc");
     setOrderBy(property);
+  };
+  const handleUpdate = async () => {
+    const errorMessages = {
+      name: !bookData.name ? "Name cannot be empty" : "",
+      author: !bookData.author ? "Author cannot be empty" : "",
+      publisher: !bookData.publisher ? "Publisher cannot be empty." : "",
+      image: !bookData.image ? "Image cannot be empty." : "",
+      language: !bookData.language ? "Language cannot be empty." : "",
+      pages: !bookData.pages ? "Number of pages cannot be empty" : "",
+      description:
+        bookData.description.length < 100
+          ? "Description must be at least 100 characters."
+          : "",
+    };
+
+    setErrorMessages(errorMessages);
+
+    // hata mesajlarının güncellendiğinden emin olmak için bekleyin
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    // state'lerin güncellendiği son hallerini kullanarak submit işlemini gerçekleştirin
+    const isFormValid = Object.values(errorMessages).every(
+      (errorMsg) => errorMsg === ""
+    );
+    if (isFormValid) {
+      const selectedBook = selected[0];
+      try {
+        axios.patch(
+          process.env.REACT_APP_BACKEND_URL + `/books/${selectedBook}`,
+          {
+            name: bookData.name,
+            author: bookData.author,
+            publisher: bookData.publisher,
+            star: bookData.star,
+            description: bookData.description,
+            image: bookData.image,
+            language: bookData.language,
+            pages: bookData.pages,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        setEditModalOpen(false);
+        setOpen(null);
+        setSelected([]);
+        setTimeout(function () {
+          // Since the database is not updated as soon as the update process is finished, we wait for one second and fetch the data.
+          fetchBooks();
+        }, 1000);
+      } catch (err) {
+        console.error(err);
+      }
+    } else {
+      console.log("Form inputs incorrect.");
+    }
+  };
+
+  const handleEdit = async () => {
+    const selectedBook = selected[0];
+    const foundBook = loadedBooks.find((book) => book._id === selectedBook);
+    setBookData({ ...foundBook });
+  };
+  const handleChange = (event) => {
+    setBookData((prevState) => ({
+      ...prevState,
+      [event.target.name]:
+        event.target.name === "star"
+          ? parseInt(event.target.value)
+          : event.target.value, // Since [event.target.name] takes all values as strings, we convert the star value to number.
+    }));
+    setErrorMessages((prevState) => ({
+      ...prevState,
+      [event.target.name]: "",
+    }));
+  };
+  const handleDelete = async () => {
+    const selectedBook = selected[0];
+
+    try {
+      await axios.delete(
+        process.env.REACT_APP_BACKEND_URL + `/books/${selectedBook}`
+      );
+      setDeleteModalOpen(false);
+      setOpen(null);
+      setSelected([]);
+      fetchBooks();
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const handleClick = (event, _id) => {
@@ -151,13 +277,13 @@ export default function UsersPage() {
   const emptyRows =
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - loadedBooks.length) : 0;
 
-  const filteredUsers = applySortFilter(
+  const filteredBooks = applySortFilter(
     loadedBooks,
     getComparator(order, orderBy),
     filterName
   );
 
-  const isNotFound = !filteredUsers.length && !!filterName;
+  const isNotFound = !filteredBooks.length && !!filterName;
 
   return (
     <>
@@ -182,11 +308,11 @@ export default function UsersPage() {
                 onRequestSort={handleRequestSort}
               />
               <TableBody>
-                {filteredUsers
+                {filteredBooks
                   .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                   .map((row) => {
                     const { name, pages, author, _id } = row;
-                    const selectedUser = selected.indexOf(_id) !== -1;
+                    const selectedBook = selected.indexOf(_id) !== -1;
 
                     return (
                       <TableRow
@@ -194,7 +320,7 @@ export default function UsersPage() {
                         key={_id}
                         tabIndex={-1}
                         role="checkbox"
-                        selected={selectedUser}
+                        selected={selectedBook}
                       >
                         <TableCell component="th" scope="row" padding="normal">
                           <Stack
@@ -202,7 +328,11 @@ export default function UsersPage() {
                             alignItems="center"
                             spacing={2}
                           >
-                            <Typography variant="subtitle2" noWrap>
+                            <Typography
+                              variant="subtitle2"
+                              sx={{ fontWeight: "bold" }}
+                              noWrap
+                            >
                               {name}
                             </Typography>
                           </Stack>
@@ -295,18 +425,26 @@ export default function UsersPage() {
           },
         }}
       >
-        <MenuItem>
+        <MenuItem
+          onClick={() => {
+            setEditModalOpen(true);
+            handleEdit();
+          }}
+        >
           <Edit />
           Edit
         </MenuItem>
 
-        <MenuItem sx={{ color: "error.main" }}>
+        <MenuItem
+          onClick={() => setDeleteModalOpen(true)}
+          sx={{ color: "error.main" }}
+        >
           <Delete />
           Delete
         </MenuItem>
       </Popover>
 
-      <Modal open={modalOpen}>
+      <Modal open={editModalOpen}>
         <Box
           sx={{
             position: "absolute",
@@ -325,26 +463,98 @@ export default function UsersPage() {
         >
           <Box sx={{ display: "flex" }}>
             <Box sx={{ flex: 1, mr: 2 }}>
-              <TextField label="Name" sx={{ paddingBottom: 1 }} fullWidth />
-              <TextField label="Author" sx={{ paddingBottom: 1 }} fullWidth />
               <TextField
+                error={errorMessages.name ? true : false}
+                helperText={errorMessages.name}
+                id="name"
+                name="name"
+                label="Name"
+                value={bookData.name}
+                onChange={handleChange}
+                sx={{ paddingBottom: 1 }}
+                fullWidth
+              />
+              <TextField
+                error={errorMessages.author ? true : false}
+                helperText={errorMessages.author}
+                id="author"
+                name="author"
+                label="Author"
+                value={bookData.author}
+                onChange={handleChange}
+                sx={{ paddingBottom: 1 }}
+                fullWidth
+              />
+              <TextField
+                error={errorMessages.publisher ? true : false}
+                helperText={errorMessages.publisher}
+                id="publisher"
+                name="publisher"
+                value={bookData.publisher}
+                onChange={handleChange}
                 label="Publisher"
                 sx={{ paddingBottom: 1 }}
                 fullWidth
               />
+
               <TextField
-                label="Star"
+                error={errorMessages.image ? true : false}
+                helperText={errorMessages.image}
+                id="image"
+                name="image"
+                label="Image"
+                value={bookData.image}
+                onChange={handleChange}
+                sx={{ paddingBottom: 1 }}
+                fullWidth
+              />
+              <TextField
+                error={errorMessages.language ? true : false}
+                helperText={errorMessages.language}
+                id="language"
+                name="language"
+                label="Language"
+                value={bookData.language}
+                onChange={handleChange}
+                sx={{ paddingBottom: 1 }}
+                fullWidth
+              />
+              <TextField
+                error={errorMessages.pages ? true : false}
+                helperText={errorMessages.pages}
+                id="pages"
+                name="pages"
+                label="Pages"
+                value={bookData.pages}
+                onChange={handleChange}
                 type="number"
                 sx={{ paddingBottom: 1 }}
                 fullWidth
               />
-              <TextField label="Image" sx={{ paddingBottom: 1 }} fullWidth />
-              <TextField label="Language" sx={{ paddingBottom: 1 }} fullWidth />
-              <TextField label="Pages" sx={{ paddingBottom: 1 }} fullWidth />
+              <Typography
+                variant="body1"
+                display="inline"
+                sx={{ marginLeft: "4px" }}
+              >
+                Star:
+                <Rating
+                  id="star"
+                  name="star"
+                  value={bookData.star}
+                  onChange={handleChange}
+                  style={{ verticalAlign: "top", marginLeft: 2 }}
+                />
+              </Typography>
             </Box>
             <Box sx={{ flex: "3 1" }}>
               <TextField
+                error={errorMessages.description ? true : false}
+                helperText={errorMessages.description}
+                id="description"
+                name="description"
                 label="Description"
+                value={bookData.description}
+                onChange={handleChange}
                 multiline
                 rows={17.7}
                 sx={{ paddingBottom: 1 }}
@@ -356,18 +566,87 @@ export default function UsersPage() {
           <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
             <Button
               variant="contained"
+              onClick={handleUpdate}
               startIcon={<Update />}
               sx={{
                 mr: 2,
-                backgroundColor: "red",
-                "&:hover": { backgroundColor: "#dd3333" },
+                backgroundColor: "green",
+                "&:hover": { backgroundColor: "#18691c" },
               }}
             >
               UPDATE
             </Button>
             <Button
               variant="contained"
-              onClick={() => setModalOpen(false)}
+              onClick={() => {
+                setErrorMessages({
+                  //Clear all old error messages when clicking Cancel.
+                  name: null,
+                  author: null,
+                  publisher: null,
+                  star: null,
+                  image: null,
+                  language: null,
+                  pages: null,
+                  description: null,
+                });
+                setEditModalOpen(false);
+              }}
+              startIcon={<Cancel />}
+              sx={{
+                backgroundColor: "grey.600",
+                "&:hover": { backgroundColor: "grey.700" },
+              }}
+            >
+              CANCEL
+            </Button>
+          </Box>
+        </Box>
+      </Modal>
+
+      <Modal
+        open={deleteModalOpen}
+        aria-labelledby="delete-modal-title"
+        aria-describedby="delete-modal-description"
+      >
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: 400,
+            bgcolor: "background.paper",
+            borderRadius: 8,
+            boxShadow: 24,
+            p: 4,
+          }}
+        >
+          <h2 id="delete-modal-title" style={{ marginTop: -8 }}>
+            Are you sure you want to delete this book?
+          </h2>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              marginTop: "auto",
+            }}
+          >
+            <Button
+              onClick={handleDelete}
+              variant="contained"
+              startIcon={<Delete />}
+              sx={{
+                mr: 10,
+                backgroundColor: "red",
+                "&:hover": { backgroundColor: "#dd3333" },
+              }}
+            >
+              DELETE
+            </Button>
+            <Button
+              onClick={() => setDeleteModalOpen(false)}
+              variant="contained"
               startIcon={<Cancel />}
               sx={{
                 backgroundColor: "grey.600",

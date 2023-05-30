@@ -54,7 +54,7 @@ export default function ListToolbar({ numSelected, filterName, onFilterName }) {
       <StyledSearch
         value={filterName}
         onChange={onFilterName}
-        placeholder="Search user..."
+        placeholder="Search..."
         startAdornment={
           <InputAdornment position="start">
             <Search />

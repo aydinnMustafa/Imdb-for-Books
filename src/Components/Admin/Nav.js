@@ -13,7 +13,7 @@ import NavSection from './nav-section/NavSection';
 import { useSelector } from 'react-redux';
 import { selectUser } from '../../features/userSlice';
 
-import { SupervisedUserCircle, LibraryBooks,Analytics } from '@mui/icons-material';
+import { SupervisedUserCircle, LibraryBooks,Analytics, AddCircleOutline } from '@mui/icons-material';
 import DefaultAvatar from '../../assets/default-avatar.jpg';
 import Logo from '../../assets/logo.png';
 
@@ -51,6 +51,11 @@ const navConfig = [
     title: 'books',
     path: '/admin/books',
     icon: <LibraryBooks />
+  },
+  {
+    title: 'new book',
+    path: '/admin/newbook',
+    icon: <AddCircleOutline />
   },
 ];
 
