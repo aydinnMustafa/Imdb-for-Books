@@ -19,7 +19,7 @@ const addBook = async (req, res, next) => {
 
     if (!user || !user.canAddBook) {
       const error = new HttpError(
-        'You have submitted an unauthorized request.',
+        "You have submitted an unauthorized request.",
         401
       );
       return next(error);
@@ -41,13 +41,17 @@ const addBook = async (req, res, next) => {
     await user.save();
     res.status(201).json({ message: "Book added.", book: book });
   } catch (err) {
-    const error = new HttpError('The book could not be added. Please try again later.', 500);
-      return next(error);
+    const error = new HttpError(
+      "The book could not be added. Please try again later.",
+      500
+    );
+    return next(error);
   }
 };
 
 const updateBook = async (req, res, next) => {
-  const { name, author, publisher, star, description, image, language, pages } = req.body;
+  const { name, author, publisher, star, description, image, language, pages } =
+    req.body;
   const bookId = req.params.bid;
   try {
     const updatedBook = await Book.findByIdAndUpdate(bookId, {
@@ -58,17 +62,20 @@ const updateBook = async (req, res, next) => {
       description,
       image,
       language,
-      pages
+      pages,
     });
 
     if (!updatedBook) {
-     const error = new HttpError('The book could not be found.', 404);
+      const error = new HttpError("The book could not be found.", 404);
       return next(error);
     }
     res.status(200).send("Book updated.");
   } catch (err) {
-    const error = new HttpError('The book could not be updated. Please try again.', 500);
-      return next(error);
+    const error = new HttpError(
+      "The book could not be updated. Please try again.",
+      500
+    );
+    return next(error);
   }
 };
 
@@ -77,15 +84,21 @@ const deleteBook = async (req, res, next) => {
     const bookId = req.params.bid;
     const deletedBook = await Book.findByIdAndDelete(bookId);
     if (!deletedBook) {
-      const error = new HttpError('The information of the book to be deleted could not be found.', 404);
+      const error = new HttpError(
+        "The information of the book to be deleted could not be found.",
+        404
+      );
       return next(error);
     }
     await Favorite.deleteMany({ bookId: bookId });
 
     res.status(200).send("Book deleted.");
   } catch (err) {
-    const error = new HttpError('The book could not be deleted. Please try again later.', 500);
-      return next(error);
+    const error = new HttpError(
+      "The book could not be deleted. Please try again later.",
+      500
+    );
+    return next(error);
   }
 };
 
@@ -93,23 +106,29 @@ const getBooks = async (req, res, next) => {
   try {
     const books = await Book.find();
     if (!books) {
-      const error = new HttpError('Could not find books.', 404);
+      const error = new HttpError("Could not find books.", 404);
       return next(error);
     }
     res.json({ books: books });
   } catch (err) {
-    const error = new HttpError('Books could not be brought. Please try again later.', 500);
-      return next(error);
+    const error = new HttpError(
+      "Books could not be brought. Please try again later.",
+      500
+    );
+    return next(error);
   }
 };
 
 const getBookById = async (req, res, next) => {
+  const bookId = req.params.bid;
   try {
-    const bookId = req.params.id;
     const book = await Book.findById(bookId);
 
     if (!book) {
-      const error = new HttpError('Could not find a book with the provided ID.', 404);
+      const error = new HttpError(
+        "Could not find a book with the provided ID.",
+        404
+      );
       return next(error);
     }
 
@@ -135,8 +154,8 @@ const addFavoriteBook = async (req, res, next) => {
             res.json({ liked: false });
           })
           .catch(function (err) {
-            const error = new HttpError('Something went wrong.', 500);
-      return next(error);
+            const error = new HttpError("Something went wrong.", 500);
+            return next(error);
           });
       } else {
         // Create a new like save
@@ -146,13 +165,19 @@ const addFavoriteBook = async (req, res, next) => {
             res.json({ liked: true });
           })
           .catch(function (err) {
-            const error = new HttpError('Failed to save book to favorites.', 500);
-      return next(error);
+            const error = new HttpError(
+              "Failed to save book to favorites.",
+              500
+            );
+            return next(error);
           });
       }
     })
     .catch(function (err) {
-      const error = new HttpError('The book could not be added to favourites. Please try again later.', 500);
+      const error = new HttpError(
+        "The book could not be added to favourites. Please try again later.",
+        500
+      );
       return next(error);
     });
 };
@@ -162,7 +187,7 @@ const getFavoriteBooks = async (req, res, next) => {
     const { userId } = req.body;
 
     if (!userId) {
-      const error = new HttpError('User ID not found.', 404);
+      const error = new HttpError("User ID not found.", 404);
       return next(error);
     }
 
@@ -176,14 +201,14 @@ const getFavoriteBooks = async (req, res, next) => {
       })
       .catch(function (err) {
         const error = new HttpError(
-          'Failed to fetch favourites. Please try again later.',
+          "Failed to fetch favourites. Please try again later.",
           500
         );
         return next(error);
       });
   } catch (err) {
     const error = new HttpError(
-      'Something went wrong. Please try again later.',
+      "Something went wrong. Please try again later.",
       500
     );
     return next(error);

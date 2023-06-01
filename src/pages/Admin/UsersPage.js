@@ -1,5 +1,5 @@
 import { filter } from "lodash";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 // @mui
 import {
   Card,
@@ -28,6 +28,7 @@ import Loading from "../../Components/Loading";
 import { ListHead, ListToolbar } from "../../Components/Admin/Users/user";
 // mock
 import axios from "axios";
+import { auth } from "../../firebase";
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
@@ -82,27 +83,42 @@ export default function UsersPage() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [loadedUsers, setLoadedUsers] = useState();
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
-
-  const fetchUsers = async () => {
+  const userToken = auth.currentUser.accessToken;
+  const fetchUsers = useCallback(async () => {
     try {
       const response = await axios.get(
-        process.env.REACT_APP_BACKEND_URL + "/users/"
+        process.env.REACT_APP_BACKEND_URL + "/users/",
+        {
+          headers: {
+            Authorization: `Bearer ${userToken}`,
+            "Content-Type": "application/json",
+          },
+        }
       );
       setLoadedUsers(response.data.users);
     } catch (err) {
       console.error(err);
     }
-  };
+  }, [userToken]);
+  
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
+  
+
 
   const handleDelete = async () => {
     const selectedUser = selected[0];
 
     try {
       await axios.delete(
-        process.env.REACT_APP_BACKEND_URL + `/users/${selectedUser}`
+        process.env.REACT_APP_BACKEND_URL + `/users/${selectedUser}`,
+        {
+          headers: {
+            Authorization: `Bearer ${userToken}`,
+            "Content-Type": "application/json",
+          },
+        }
       );
       setModalOpen(false);
       setOpen(null);

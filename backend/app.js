@@ -1,10 +1,10 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
-const auth = require("./middleware/auth");
 const usersRoutes = require("./routes/users-routes");
 const booksRoutes = require("./routes/books-routes");
 const HttpError = require("./models/http-error");
+const auth = require("./middleware/auth");
 const app = express();
 
 require("dotenv").config();
@@ -24,12 +24,11 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use("/api/users", usersRoutes);
-app.use("/api/books", booksRoutes);
-
+app.use("/api/users", auth, usersRoutes);
+app.use("/api/books", auth, booksRoutes);
 
 app.use((req, res, next) => {
-  const error = new HttpError('Could not find this route.', 404);
+  const error = new HttpError("Could not find this route.", 404);
   throw error;
 });
 

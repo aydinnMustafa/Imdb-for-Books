@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Grid } from "@mui/material";
 import axios from "axios";
+import { auth } from "../firebase";
 import { useSelector } from "react-redux";
 
 import BookItem from "./BookItem";
@@ -17,7 +18,15 @@ const BookList = () => {
   useEffect(() => {
     const fetchBooks = async () => {
       try {
-        const response = await axios.get(process.env.REACT_APP_BACKEND_URL + "/books/");
+        const response = await axios.get(
+          process.env.REACT_APP_BACKEND_URL + "/books/",
+          {
+            headers: {
+              Authorization: `Bearer ${auth.currentUser.accessToken}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
         setLoadedBooks(response.data.books);
       } catch (err) {
         console.error(err);
@@ -35,11 +44,13 @@ const BookList = () => {
         },
         {
           headers: {
+            Authorization: `Bearer ${auth.currentUser.accessToken}`,
             "Content-Type": "application/json",
           },
         }
       );
       const favoritesBooksObj = {};
+      console.log(response.data.favoritebooks);
       response.data.favoritebooks.forEach((favorite) => {
         favoritesBooksObj[favorite._id] = true;
       });
@@ -65,6 +76,7 @@ const BookList = () => {
         },
         {
           headers: {
+            Authorization: `Bearer ${auth.currentUser.accessToken}`,
             "Content-Type": "application/json",
           },
         }

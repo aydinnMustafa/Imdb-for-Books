@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
+import {auth} from "../firebase";
 import {
   Container,
   Typography,
@@ -18,12 +19,18 @@ import Navbar from "../Components/Navbar";
 const BookDetail = () => {
   const { id } = useParams();
   const [bookDetails, setBookDetails] = useState(null);
-
   useEffect(() => {
     const fetchBookDetails = async () => {
       try {
         const response = await axios.get(
-          process.env.REACT_APP_BACKEND_URL + `/books/${id}`
+          process.env.REACT_APP_BACKEND_URL + `/books/${id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${auth.currentUser.accessToken}`,
+              "Content-Type": "application/json",
+            },
+          }
+          
         );
         setBookDetails(response.data.book);
       } catch (err) {

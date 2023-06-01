@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import {auth} from "../firebase";
 import { Grid } from "@mui/material";
 import { useSelector } from "react-redux";
 
@@ -25,6 +26,7 @@ function FavoritesPage() {
           },
           {
             headers: {
+              Authorization: `Bearer ${auth.currentUser.accessToken}`,
               "Content-Type": "application/json",
             },
           }
@@ -59,6 +61,7 @@ function FavoritesPage() {
         },
         {
           headers: {
+            Authorization: `Bearer ${auth.currentUser.accessToken}`,
             "Content-Type": "application/json",
           },
         }

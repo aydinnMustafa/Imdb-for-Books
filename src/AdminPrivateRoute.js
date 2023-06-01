@@ -70,7 +70,7 @@ const AdminPrivateRoute = ({ component: Component, ...rest }) => {
       render={(props) => {
         if (userStatus == null) {
           return <Loading />;
-        } else if (userStatus === "connect" && userSelect.role === "user") {
+        } else if (userStatus === "connect" && userSelect.role === "Admin") {
           return <Component {...props} />;
         } else {
           return <Redirect to="/books" />;

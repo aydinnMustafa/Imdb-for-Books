@@ -1,43 +1,42 @@
 const admin = require("../firebase-config");
-const User = require('../models/users-schema');
+const User = require("../models/users-schema");
+const HttpError = require("../models/http-error");
 
 const auth = async (req, res, next) => {
+  const token = req.headers.authorization.split(" ")[1];
+  if (!token) {
+    res.status(401);
+    res.json({ error: "There is no Authorization header." });
+    return false;
+  }
   try {
-    const { _id } = req.body;
-    
-    if (!req.body._id) {
-      throw 'User ID not found!';
-    } else {
-      const user = await User.findOne({ _id: _id });
-      if (!user) {
-        throw "User not found!";
+    const decodedToken = await admin.auth().verifyIdToken(token);
+    if (decodedToken.role) {
+      const user = await User.findOne({ _id: decodedToken.user_id });
+      if (user.role === decodedToken.role) {
+        // The token contains role information and matches the role information in the User database. (Verification successful.)
+        return next();
+      } else {
+        // The token role does not match the one in the database.
+        res.status(401);
+        console.log(error);
+        res.json({ error: "You are not authorized." });
+        return false;
       }
-      const role = user.role || "User";
-     
+    } else {
+      // Since it is a new registration, the token does not have a role. By default, we add the User role to the user token.
+      const userRecord = await admin.auth().getUser(decodedToken.user_id);
 
-    const token = req.headers.authorization.split(" ")[1];
-    try{
-      const decodedToken = await admin.auth().verifyIdToken(token);
-      
-      const userRecord = await admin.auth().getUser(_id);
       const currentClaims = userRecord.customClaims || {};
-
-      const newClaims = { role: role };
-           
-      await admin.auth().setCustomUserClaims(_id, {...currentClaims, ...newClaims});          
-        
-        console.log("ONAY BAŞARILI");
-        res.status(200).json({token: token});
-    }catch(err){
-      console.log(err);
+      await admin.auth().setCustomUserClaims(decodedToken.user_id, {
+        ...currentClaims,
+        role: "User",
+      });
+      res.status(200).json({ message: "Added role to token." });
+      return next();
     }
-    
-      
-    }
-  } catch (err){
-    res.status(401).json({
-      error: new Error('Request başarısız.')
-    });
+  } catch (err) {
+    console.log(err);
   }
 };
 

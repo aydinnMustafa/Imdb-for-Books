@@ -62,7 +62,6 @@ const navConfig = [
  function Nav({ openNav, onCloseNav }) {
   const user = useSelector(selectUser);
   const { pathname } = useLocation();
-  
 
   const isDesktop = useResponsive('up', 'lg');
 

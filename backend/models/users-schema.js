@@ -17,8 +17,8 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      default: "user",
-      enum: ["user", "editor", "admin"],
+      default: "User",
+      enum: ["User", "Editor", "Admin"],
     },
     canAddBook: {
       type: Boolean,

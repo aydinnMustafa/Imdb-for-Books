@@ -1,5 +1,5 @@
 import { filter } from "lodash";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 // @mui
 import {
   Card,
@@ -28,6 +28,7 @@ import Loading from "../../Components/Loading";
 import { ListHead, ListToolbar } from "../../Components/Admin/Users/user";
 // mock
 import axios from "axios";
+import { auth } from "../../firebase";
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
@@ -103,20 +104,29 @@ export default function BooksPage() {
     description: null,
   });
 
-  useEffect(() => {
-    fetchBooks();
-  }, []);
-
-  const fetchBooks = async () => {
+  const userToken = auth.currentUser.accessToken;
+  const fetchBooks = useCallback(async () => {
     try {
       const response = await axios.get(
-        process.env.REACT_APP_BACKEND_URL + "/books"
+        process.env.REACT_APP_BACKEND_URL + "/books",
+        {
+          headers: {
+            Authorization: `Bearer ${userToken}`,
+            "Content-Type": "application/json",
+          },
+        }
       );
       setLoadedBooks(response.data.books);
     } catch (err) {
       console.error(err);
     }
-  };
+  }, [userToken]);
+
+  useEffect(() => {
+    fetchBooks();
+  }, [fetchBooks]);
+
+  
 
   const handleOpenMenu = (event) => {
     setOpen(event.currentTarget);
@@ -181,6 +191,7 @@ export default function BooksPage() {
           },
           {
             headers: {
+              Authorization: `Bearer ${userToken}`,
               "Content-Type": "application/json",
             },
           }
@@ -223,7 +234,13 @@ export default function BooksPage() {
 
     try {
       await axios.delete(
-        process.env.REACT_APP_BACKEND_URL + `/books/${selectedBook}`
+        process.env.REACT_APP_BACKEND_URL + `/books/${selectedBook}`,
+        {
+          headers: {
+            Authorization: `Bearer ${userToken}`,
+            "Content-Type": "application/json",
+          },
+        }
       );
       setDeleteModalOpen(false);
       setOpen(null);

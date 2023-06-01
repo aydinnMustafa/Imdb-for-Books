@@ -16,6 +16,7 @@ const PrivateRoute = ({ component: Component, ...rest }) => {
   const fetchData = useCallback(() => {
     onAuthStateChanged(auth, (userAuth) => {
       if (userAuth) {
+        console.log(userAuth);
         userAuth.getIdToken().then((token) => {
           let decodeUserRole = jwtDecode(token).role;
           dispatch(

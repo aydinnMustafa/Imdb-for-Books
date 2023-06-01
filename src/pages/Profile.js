@@ -21,9 +21,6 @@ import DefaultAvatar from '../assets/default-avatar.jpg';
 import axios from "axios";
 
 import {
-  updateProfile,
-  updateEmail,
-  updatePassword,
   reauthenticateWithCredential,
   EmailAuthProvider,
 } from "firebase/auth";
@@ -144,6 +141,7 @@ function Profile() {
           },
           {
             headers: {
+              Authorization: `Bearer ${auth.currentUser.accessToken}`,
               "Content-Type": "application/json",
             },
           }

@@ -8,7 +8,7 @@ import Nav from "../Components/Admin/Nav";
 import UsersPage from "./Admin/UsersPage";
 import BooksPage from "./Admin/BooksPage";
 import DashboardPage from "./Admin/DashboardPage";
-import BookEditPage from "./Admin/BookEditPage";
+import NewBookPage from "./Admin/NewBookPage";
 
 // ----------------------------------------------------------------------
 
@@ -41,7 +41,7 @@ export default function AdminPanel() {
   const isAdminUsersPage = window.location.pathname === "/admin/users";
   const isAdminBooksPage = window.location.pathname === "/admin/books";
   const isAdminDashboardPage = window.location.pathname === "/admin";
-  const isAdminBookEdit = window.location.pathname.startsWith("/admin/books/") && window.location.pathname.endsWith("/edit");
+  const isAdminNewBookPage = window.location.pathname === "/admin/newbook";
 
   return (
     <StyledRoot>
@@ -50,7 +50,7 @@ export default function AdminPanel() {
       {isAdminUsersPage && <UsersPage />}
       {isAdminBooksPage && <BooksPage />}
       {isAdminDashboardPage && <DashboardPage />}
-      {isAdminBookEdit && <BookEditPage />}
+      {isAdminNewBookPage && <NewBookPage />}
       <Main></Main>
     </StyledRoot>
   );

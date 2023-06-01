@@ -62,7 +62,7 @@ export const loginFunc = (
 };
 
 function deleteCurrentUser() {
-  const user = auth().currentUser;
+  const user = auth.currentUser;
   user
     .delete()
     .then(function () {})
@@ -105,12 +105,12 @@ export const registerFunc = (
               },
             }
           )
-          .then((response) => {
+          .then(() => {
             auth.currentUser?.getIdTokenResult(true);
             setTimeout(function () {
               setLoading(false);
               history.push("/books");
-            }, 500);
+            }, 1000);
           })
           .catch((e) => {
             deleteCurrentUser();
@@ -149,7 +149,7 @@ export const googleLogin = (auth, history) => {
             },
           }
         )
-        .then((response) => {
+        .then(() => {
           auth.currentUser?.getIdTokenResult(true); //We prevent token renewal if the role has been added to the token before in logins with Google.
           setTimeout(function () {
             history.push("/books");

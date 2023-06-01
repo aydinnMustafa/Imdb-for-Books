@@ -3,6 +3,7 @@ const HttpError = require("../models/http-error");
 const firebase_admin = require("../firebase-config");
 
 const signup = async (req, res, next) => {
+  console.log("kayıt olmaya giriyor mu acaba");
   const { _id, fullname, email, role } = req.body;
   let existingUser;
   existingUser = await User.findOne({ email: email });
@@ -18,19 +19,23 @@ const signup = async (req, res, next) => {
       _id,
       fullname,
       email,
-      role,
+      role
     });
 
     try {
       await createdUser.save();
-      if (createdUser.role === "admin" && !createdUser.canAddBook) {
+      console.log("kayıt tamam");
+      if (createdUser.role === "Admin" && !createdUser.canAddBook) {
         // kayıt edilen kullanıcı role admin ise kitap ekleme true.
         createdUser.canAddBook = true;
         await createdUser.save();
       }
-      next();
     } catch (err) {
-      const error = new HttpError('User registration failed. Please try again.', 500);
+      console.log(err);
+      const error = new HttpError(
+        "User registration failed. Please try again.",
+        500
+      );
       return next(error);
     }
   }
@@ -45,16 +50,15 @@ const updateUser = async (req, res, next) => {
     const user = await User.findById(userId);
 
     if (!user) {
-      const error = new HttpError('User not found.', 404);
+      const error = new HttpError("User not found.", 404);
       return next(error);
-     
     }
 
     firebase_admin.auth().updateUser(userId, {
       displayName: fullname,
       email: email,
-      password: password
-    })
+      password: password,
+    });
 
     // Update the found user's information with new ones
     user.fullname = fullname;
@@ -65,18 +69,25 @@ const updateUser = async (req, res, next) => {
 
     res.json({ message: "User update successful." });
   } catch (err) {
-    const error = new HttpError('The user could not be updated. Please try again.', 500);
-      return next(error);
+    const error = new HttpError(
+      "The user could not be updated. Please try again.",
+      500
+    );
+    return next(error);
   }
 };
 
 const getUsers = async (req, res, next) => {
   try {
     const users = await User.find();
-  
+
     res.json({ users: users });
   } catch (err) {
-    const error = new HttpError('Kullanıcılar alınamadı. Lütfen tekrar deneyin.', 500);
+    console.log(err);
+    const error = new HttpError(
+      "Kullanıcılar alınamadı. Lütfen tekrar deneyin.",
+      500
+    );
     return next(error);
   }
 };
@@ -92,11 +103,14 @@ const deleteUser = async (req, res, next) => {
       const deletedUser = await User.findByIdAndDelete(uid);
     }
 
-    res.status(200).json({ message: 'Kullanıcı başarıyla silindi.' });
+    res.status(200).json({ message: "Kullanıcı başarıyla silindi." });
   } catch (err) {
     console.log(err);
-    const error = new HttpError('The user could not be deleted. Please try again.', 500);
-      return next(error);
+    const error = new HttpError(
+      "The user could not be deleted. Please try again.",
+      500
+    );
+    return next(error);
   }
 };
 
