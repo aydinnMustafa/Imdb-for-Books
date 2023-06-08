@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
-import {auth} from "../firebase";
+import { auth } from "../firebase";
 import {
   Container,
   Typography,
@@ -10,7 +10,7 @@ import {
   CardContent,
   Rating,
   Grid,
-  useMediaQuery
+  useMediaQuery,
 } from "@mui/material";
 
 import Loading from "../Components/Loading";
@@ -30,7 +30,6 @@ const BookDetail = () => {
               "Content-Type": "application/json",
             },
           }
-          
         );
         setBookDetails(response.data.book);
       } catch (err) {
@@ -39,6 +38,7 @@ const BookDetail = () => {
     };
     fetchBookDetails();
   }, [id]);
+
   const isSmallScreen = useMediaQuery("(max-width: 600px)");
   return (
     <React.Fragment>
@@ -61,7 +61,7 @@ const BookDetail = () => {
                 component="img"
                 height={isSmallScreen ? 400 : 635}
                 image={bookDetails && bookDetails.image}
-                alt="The Catcher in the Rye"
+                alt={bookDetails && bookDetails.name}
                 sx={{
                   objectFit: "contain",
                   marginRight: isSmallScreen ? 6 : 10,

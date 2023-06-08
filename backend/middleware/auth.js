@@ -3,13 +3,16 @@ const User = require("../models/users-schema");
 const HttpError = require("../models/http-error");
 
 const auth = async (req, res, next) => {
-  const token = req.headers.authorization.split(" ")[1];
+  try {
+    const token = req.headers.authorization?.split(" ")[1];
+
+    req.token = token;
   if (!token) {
     res.status(401);
     res.json({ error: "There is no Authorization header." });
     return false;
   }
-  try {
+
     const decodedToken = await admin.auth().verifyIdToken(token);
     if (decodedToken.role) {
       const user = await User.findOne({ _id: decodedToken.user_id });
@@ -19,7 +22,6 @@ const auth = async (req, res, next) => {
       } else {
         // The token role does not match the one in the database.
         res.status(401);
-        console.log(error);
         res.json({ error: "You are not authorized." });
         return false;
       }

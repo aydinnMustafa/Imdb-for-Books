@@ -24,7 +24,10 @@ function BookItem(props) {
         borderRadius: 2,
       }}
     >
-      <Link to={bookDetails} style={{color: "inherit", textDecoration: "none"}}>
+      <Link
+        to={bookDetails}
+        style={{ color: "inherit", textDecoration: "none" }}
+      >
         <CardContent sx={{ flexGrow: 1 }}>
           <Typography gutterBottom variant="h5" component="div">
             {name}
@@ -38,17 +41,21 @@ function BookItem(props) {
         </CardContent>
         <CardMedia
           component="img"
-          image={
-            imageUrl ||
-            "https://img.kitapyurdu.com/v1/getImage/fn:1030555/wh:true/wi:220"
-          }
-          alt="Paella dish"
-          sx={{ maxHeight: 400, objectFit: "contain", mx: "auto" }}
+          image={imageUrl}
+          alt="Book Cover"
+          sx={{
+            maxHeight: 330,
+            objectFit: "fill",
+            marginLeft: "auto",
+            marginRight: "auto",
+            paddingLeft: 2,
+            paddingRight: 2,
+          }}
         />
       </Link>
       <CardActions>
         <IconButton
-          aria-label="add to favorites"
+          aria-label="Add to favorites"
           onClick={() => {
             props.toggleFavorite();
           }}

@@ -3,6 +3,7 @@ const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const usersRoutes = require("./routes/users-routes");
 const booksRoutes = require("./routes/books-routes");
+const adminRoutes = require("./routes/admin-routes");
 const HttpError = require("./models/http-error");
 const auth = require("./middleware/auth");
 const app = express();
@@ -26,6 +27,7 @@ app.use((req, res, next) => {
 
 app.use("/api/users", auth, usersRoutes);
 app.use("/api/books", auth, booksRoutes);
+app.use("/api/admin", auth, adminRoutes);
 
 app.use((req, res, next) => {
   const error = new HttpError("Could not find this route.", 404);

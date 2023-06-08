@@ -23,6 +23,9 @@ import axios from "axios";
 import {
   reauthenticateWithCredential,
   EmailAuthProvider,
+  updateProfile,
+  updateEmail,
+  updatePassword
 } from "firebase/auth";
 import { auth } from "../firebase";
 import { useHistory } from "react-router-dom";
@@ -126,18 +129,17 @@ function Profile() {
         );
         await reauthenticateWithCredential(auth.currentUser, credential);
 
-        // updateProfile(currentUser, {
-        //   displayName: userData.fullname,
-        // });
+         updateProfile(currentUser, {
+           displayName: userData.fullname,
+         });
 
-        // await updateEmail(currentUser, userData.email_adress);
-        // await updatePassword(currentUser, userData.newPassword);
+         await updateEmail(currentUser, userData.email_adress);
+         await updatePassword(currentUser, userData.newPassword);
         axios.patch(
           process.env.REACT_APP_BACKEND_URL + `/users/${currentUser.uid}`,
           {
             fullname: userData.fullname,
             email: userData.email_adress,
-            password: userData.newPassword
           },
           {
             headers: {

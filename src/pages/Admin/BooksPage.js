@@ -73,6 +73,7 @@ function applySortFilter(array, comparator, query) {
 
 export default function BooksPage() {
   const [open, setOpen] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [page, setPage] = useState(0);
@@ -108,7 +109,7 @@ export default function BooksPage() {
   const fetchBooks = useCallback(async () => {
     try {
       const response = await axios.get(
-        process.env.REACT_APP_BACKEND_URL + "/books",
+        process.env.REACT_APP_BACKEND_URL + "/admin/books",
         {
           headers: {
             Authorization: `Bearer ${userToken}`,
@@ -125,8 +126,6 @@ export default function BooksPage() {
   useEffect(() => {
     fetchBooks();
   }, [fetchBooks]);
-
-  
 
   const handleOpenMenu = (event) => {
     setOpen(event.currentTarget);
@@ -175,10 +174,13 @@ export default function BooksPage() {
       (errorMsg) => errorMsg === ""
     );
     if (isFormValid) {
+      setEditModalOpen(false);
+      setOpen(null);
+      setLoading(true);
       const selectedBook = selected[0];
       try {
         axios.patch(
-          process.env.REACT_APP_BACKEND_URL + `/books/${selectedBook}`,
+          process.env.REACT_APP_BACKEND_URL + `/admin/book/${selectedBook}`,
           {
             name: bookData.name,
             author: bookData.author,
@@ -196,12 +198,11 @@ export default function BooksPage() {
             },
           }
         );
-        setEditModalOpen(false);
-        setOpen(null);
         setSelected([]);
         setTimeout(function () {
           // Since the database is not updated as soon as the update process is finished, we wait for one second and fetch the data.
           fetchBooks();
+          setLoading(false);
         }, 1000);
       } catch (err) {
         console.error(err);
@@ -230,11 +231,13 @@ export default function BooksPage() {
     }));
   };
   const handleDelete = async () => {
+    setDeleteModalOpen(false);
+    setOpen(null);
+    setLoading(true);
     const selectedBook = selected[0];
-
     try {
       await axios.delete(
-        process.env.REACT_APP_BACKEND_URL + `/books/${selectedBook}`,
+        process.env.REACT_APP_BACKEND_URL + `/admin/book/${selectedBook}`,
         {
           headers: {
             Authorization: `Bearer ${userToken}`,
@@ -242,10 +245,9 @@ export default function BooksPage() {
           },
         }
       );
-      setDeleteModalOpen(false);
-      setOpen(null);
       setSelected([]);
       fetchBooks();
+      setLoading(false);
     } catch (err) {
       console.error(err);
     }
@@ -307,6 +309,7 @@ export default function BooksPage() {
       <title> Books</title>
 
       <Container style={{ marginTop: "13vh" }}>
+      {loading && <Loading asOverlay />}
         <Card>
           <ListToolbar
             numSelected={selected.length}

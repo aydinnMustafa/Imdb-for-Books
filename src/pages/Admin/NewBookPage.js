@@ -86,7 +86,7 @@ const NewBookPage = () => {
       setLoading(true);
       try {
         axios.post(
-          process.env.REACT_APP_BACKEND_URL + `/books/add`,
+          process.env.REACT_APP_BACKEND_URL + `/admin/book/add`,
           {
             userId: userId,
             name: bookData.name,
@@ -241,7 +241,7 @@ const NewBookPage = () => {
                       id="star"
                       name="star"
                       value={bookData.star}
-                      precision={0.1}
+                      
                       style={{ verticalAlign: "top", marginLeft: 2 }}
                       onChange={handleChange}
                     />

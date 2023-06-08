@@ -2,114 +2,25 @@ const Book = require("../models/book-schema");
 const User = require("../models/users-schema");
 const Favorite = require("../models/favorites-schema");
 const HttpError = require("../models/http-error");
-const addBook = async (req, res, next) => {
-  const {
-    userId,
-    name,
-    author,
-    publisher,
-    star,
-    description,
-    image,
-    language,
-    pages,
-  } = req.body;
-  try {
-    const user = await User.findById(userId);
-
-    if (!user || !user.canAddBook) {
-      const error = new HttpError(
-        "You have submitted an unauthorized request.",
-        401
-      );
-      return next(error);
-    }
-
-    const book = new Book({
-      name,
-      author,
-      publisher,
-      star,
-      description,
-      image,
-      language,
-      pages,
-    });
-
-    await book.save();
-    user.addedBooks.push(book._id);
-    await user.save();
-    res.status(201).json({ message: "Book added.", book: book });
-  } catch (err) {
-    const error = new HttpError(
-      "The book could not be added. Please try again later.",
-      500
-    );
-    return next(error);
-  }
-};
-
-const updateBook = async (req, res, next) => {
-  const { name, author, publisher, star, description, image, language, pages } =
-    req.body;
-  const bookId = req.params.bid;
-  try {
-    const updatedBook = await Book.findByIdAndUpdate(bookId, {
-      name,
-      author,
-      publisher,
-      star,
-      description,
-      image,
-      language,
-      pages,
-    });
-
-    if (!updatedBook) {
-      const error = new HttpError("The book could not be found.", 404);
-      return next(error);
-    }
-    res.status(200).send("Book updated.");
-  } catch (err) {
-    const error = new HttpError(
-      "The book could not be updated. Please try again.",
-      500
-    );
-    return next(error);
-  }
-};
-
-const deleteBook = async (req, res, next) => {
-  try {
-    const bookId = req.params.bid;
-    const deletedBook = await Book.findByIdAndDelete(bookId);
-    if (!deletedBook) {
-      const error = new HttpError(
-        "The information of the book to be deleted could not be found.",
-        404
-      );
-      return next(error);
-    }
-    await Favorite.deleteMany({ bookId: bookId });
-
-    res.status(200).send("Book deleted.");
-  } catch (err) {
-    const error = new HttpError(
-      "The book could not be deleted. Please try again later.",
-      500
-    );
-    return next(error);
-  }
-};
 
 const getBooks = async (req, res, next) => {
   try {
-    const books = await Book.find();
-    if (!books) {
+    let page = Number(req.query.page) || 1;
+    let limit = Number(req.query.limit) || 4;
+
+    let skip = (page - 1) * limit;
+
+    const totalBooks = await Book.countDocuments(); // To show the total number of pages on the frontend side
+    const pageCount = Math.ceil(totalBooks / limit);
+
+    const books = await Book.find().skip(skip).limit(limit);
+
+    if (!books || books.length === 0) {
       const error = new HttpError("Could not find books.", 404);
       return next(error);
     }
-    res.json({ books: books });
+
+    res.json({ books: books, pageCount: pageCount });
   } catch (err) {
     const error = new HttpError(
       "Books could not be brought. Please try again later.",
@@ -191,21 +102,29 @@ const getFavoriteBooks = async (req, res, next) => {
       return next(error);
     }
 
-    Favorite.find({ userId: userId })
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 4;
+    const skip = (page - 1) * limit;
+
+    const favoriteBooksQuery = Favorite.find({ userId: userId })
       .populate("bookId")
-      .then(function (results) {
-        const books = results.map(function (like) {
-          return like.bookId;
-        });
-        res.json({ favoritebooks: books });
-      })
-      .catch(function (err) {
-        const error = new HttpError(
-          "Failed to fetch favourites. Please try again later.",
-          500
-        );
-        return next(error);
-      });
+      .skip(skip)
+      .limit(limit);
+
+    const countQuery = Favorite.countDocuments({ userId: userId });
+
+    const [favoriteBooks, count] = await Promise.all([
+      favoriteBooksQuery.exec(),
+      countQuery.exec(),
+    ]);
+
+    const pageCount = Math.ceil(count / limit);
+    const books = favoriteBooks.map(like => like.bookId); // Sadece kitapları içeren bir dizi oluşturuyoruz
+
+    res.json({
+      favoritebooks: books,
+      pageCount: pageCount,
+    });
   } catch (err) {
     const error = new HttpError(
       "Something went wrong. Please try again later.",
@@ -215,9 +134,6 @@ const getFavoriteBooks = async (req, res, next) => {
   }
 };
 
-exports.addBook = addBook;
-exports.updateBook = updateBook;
-exports.deleteBook = deleteBook;
 exports.addFavoriteBook = addFavoriteBook;
 exports.getBooks = getBooks;
 exports.getFavoriteBooks = getFavoriteBooks;

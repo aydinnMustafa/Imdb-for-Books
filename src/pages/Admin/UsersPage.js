@@ -20,8 +20,9 @@ import {
   Modal,
   Box,
   Button,
+  TextField,
 } from "@mui/material";
-import { MoreVert, Edit, Delete, Cancel } from "@mui/icons-material";
+import { MoreVert, Edit, Delete, Cancel, Update } from "@mui/icons-material";
 import Loading from "../../Components/Loading";
 
 // sections
@@ -74,7 +75,9 @@ function applySortFilter(array, comparator, query) {
 
 export default function UsersPage() {
   const [open, setOpen] = useState(null);
-  const [modalOpen, setModalOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [page, setPage] = useState(0);
   const [order, setOrder] = useState("asc");
   const [selected, setSelected] = useState([]);
@@ -83,11 +86,22 @@ export default function UsersPage() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [loadedUsers, setLoadedUsers] = useState();
 
+  const [userData, setUserData] = useState({
+    fullname: "",
+    email: "",
+    role: "",
+  });
+  const [errorMessages, setErrorMessages] = useState({
+    fullname: null,
+    email: null,
+    role: null,
+  });
+
   const userToken = auth.currentUser.accessToken;
   const fetchUsers = useCallback(async () => {
     try {
       const response = await axios.get(
-        process.env.REACT_APP_BACKEND_URL + "/users/",
+        process.env.REACT_APP_BACKEND_URL + "/admin/users",
         {
           headers: {
             Authorization: `Bearer ${userToken}`,
@@ -100,19 +114,87 @@ export default function UsersPage() {
       console.error(err);
     }
   }, [userToken]);
-  
+
   useEffect(() => {
     fetchUsers();
   }, [fetchUsers]);
-  
 
+  const handleChange = (event) => {
+    setUserData((prevState) => ({
+      ...prevState,
+      [event.target.name]: event.target.value,
+    }));
+    setErrorMessages((prevState) => ({
+      ...prevState,
+      [event.target.name]: "",
+    }));
+  };
+  const handleEdit = async () => {
+    const selectedUser = selected[0];
+    const foundUser = loadedUsers.find((user) => user._id === selectedUser);
+    console.log(foundUser);
+    setUserData({ ...foundUser });
+  };
+
+  const handleUpdate = async () => {
+    const errorMessages = {
+      fullname: !userData.fullname ? "Name cannot be empty" : "",
+      email: !userData.email ? "Email cannot be empty" : "",
+      role: !userData.role ? "Role cannot be empty." : "",
+    };
+
+    setErrorMessages(errorMessages);
+    // hata mesajlarının güncellendiğinden emin olmak için bekleyin
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    // state'lerin güncellendiği son hallerini kullanarak submit işlemini gerçekleştirin
+    const isFormValid = Object.values(errorMessages).every(
+      (errorMsg) => errorMsg === ""
+    );
+
+    if (isFormValid) {
+      setEditModalOpen(false);
+      setOpen(null);
+      setLoading(true);
+      const selectedUser = selected[0];
+      try {
+        axios.patch(
+          process.env.REACT_APP_BACKEND_URL + `/admin/user/${selectedUser}`,
+          {
+            fullname: userData.fullname,
+            email: userData.email,
+            role: userData.role,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${userToken}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        console.log("update başarılı");
+        setSelected([]);
+        setTimeout(function () {
+          // Since the database is not updated as soon as the update process is finished, we wait for one second and fetch the data.
+          fetchUsers();
+        }, 1000);
+        setLoading(false);
+      } catch (err) {
+        console.error(err);
+      }
+    } else {
+      console.log("Form inputs incorrect.");
+    }
+  };
 
   const handleDelete = async () => {
+    setDeleteModalOpen(false);
+    setOpen(null);
+    setLoading(true);
     const selectedUser = selected[0];
-
     try {
       await axios.delete(
-        process.env.REACT_APP_BACKEND_URL + `/users/${selectedUser}`,
+        process.env.REACT_APP_BACKEND_URL + `/admin/user/${selectedUser}`,
         {
           headers: {
             Authorization: `Bearer ${userToken}`,
@@ -120,10 +202,9 @@ export default function UsersPage() {
           },
         }
       );
-      setModalOpen(false);
-      setOpen(null);
       setSelected([]);
       fetchUsers();
+      setLoading(false);
     } catch (err) {
       console.error(err);
     }
@@ -175,6 +256,9 @@ export default function UsersPage() {
     setFilterName(event.target.value);
   };
 
+  const emptyRows =
+    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - loadedUsers.length) : 0;
+
   if (!loadedUsers || loadedUsers.length === 0) {
     return (
       <div style={{ marginLeft: 500 }}>
@@ -182,9 +266,6 @@ export default function UsersPage() {
       </div>
     );
   }
-
-  const emptyRows =
-    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - loadedUsers.length) : 0;
 
   const filteredUsers = applySortFilter(
     loadedUsers,
@@ -197,7 +278,7 @@ export default function UsersPage() {
   return (
     <>
       <title> Users</title>
-
+      {loading && <Loading asOverlay />}
       <Container style={{ marginTop: "13vh" }}>
         <Card>
           <ListToolbar
@@ -339,21 +420,122 @@ export default function UsersPage() {
           },
         }}
       >
-        <MenuItem>
+        <MenuItem
+          onClick={() => {
+            setEditModalOpen(true);
+            handleEdit();
+          }}
+        >
           <Edit />
           Edit
         </MenuItem>
 
         <MenuItem
-          onClick={() => setModalOpen(true)}
+          onClick={() => setDeleteModalOpen(true)}
           sx={{ color: "error.main" }}
         >
           <Delete />
           Delete
         </MenuItem>
 
+        <Modal open={editModalOpen}>
+          <Box
+            sx={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              width: 1000,
+              maxWidth: "90vw",
+              bgcolor: "background.paper",
+              borderRadius: 8,
+              boxShadow: 24,
+              p: 4,
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <Box sx={{ display: "flex" }}>
+              <Box sx={{ flex: 1, mr: 2 }}>
+                <TextField
+                  error={errorMessages.fullname ? true : false}
+                  helperText={errorMessages.fullname}
+                  id="fullname"
+                  name="fullname"
+                  label="Name"
+                  value={userData.fullname}
+                  onChange={handleChange}
+                  sx={{ paddingBottom: 1 }}
+                  fullWidth
+                />
+                <TextField
+                  error={errorMessages.email ? true : false}
+                  helperText={errorMessages.email}
+                  id="email"
+                  name="email"
+                  label="Email"
+                  value={userData.email}
+                  onChange={handleChange}
+                  sx={{ paddingBottom: 1 }}
+                  fullWidth
+                />
+                <TextField
+                  error={errorMessages.role ? true : false}
+                  helperText={errorMessages.role}
+                  id="role"
+                  name="role"
+                  value={userData.role}
+                  onChange={handleChange}
+                  label="Role"
+                  sx={{ paddingBottom: 1 }}
+                  fullWidth
+                />
+              </Box>
+            </Box>
+
+            <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
+              <Button
+                variant="contained"
+                onClick={handleUpdate}
+                startIcon={<Update />}
+                sx={{
+                  mr: 2,
+                  backgroundColor: "green",
+                  "&:hover": { backgroundColor: "#18691c" },
+                }}
+              >
+                UPDATE
+              </Button>
+              <Button
+                variant="contained"
+                onClick={() => {
+                  setErrorMessages({
+                    //Clear all old error messages when clicking Cancel.
+                    name: null,
+                    author: null,
+                    publisher: null,
+                    star: null,
+                    image: null,
+                    language: null,
+                    pages: null,
+                    description: null,
+                  });
+                  setEditModalOpen(false);
+                }}
+                startIcon={<Cancel />}
+                sx={{
+                  backgroundColor: "grey.600",
+                  "&:hover": { backgroundColor: "grey.700" },
+                }}
+              >
+                CANCEL
+              </Button>
+            </Box>
+          </Box>
+        </Modal>
+
         <Modal
-          open={modalOpen}
+          open={deleteModalOpen}
           aria-labelledby="delete-modal-title"
           aria-describedby="delete-modal-description"
         >
@@ -393,7 +575,7 @@ export default function UsersPage() {
                 DELETE
               </Button>
               <Button
-                onClick={() => setModalOpen(false)}
+                onClick={() => setDeleteModalOpen(false)}
                 variant="contained"
                 startIcon={<Cancel />}
                 sx={{
