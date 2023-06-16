@@ -6,18 +6,18 @@ const auth = async (req, res, next) => {
   try {
     const token = req.headers.authorization?.split(" ")[1];
 
-    req.token = token;
-  if (!token) {
-    res.status(401);
-    res.json({ error: "There is no Authorization header." });
-    return false;
-  }
+    if (!token) {
+      res.status(401);
+      res.json({ error: "There is no Authorization header." });
+      return false;
+    }
 
     const decodedToken = await admin.auth().verifyIdToken(token);
     if (decodedToken.role) {
       const user = await User.findOne({ _id: decodedToken.user_id });
       if (user.role === decodedToken.role) {
         // The token contains role information and matches the role information in the User database. (Verification successful.)
+        req.user = user;
         return next();
       } else {
         // The token role does not match the one in the database.

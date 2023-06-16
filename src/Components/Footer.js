@@ -1,74 +1,71 @@
-import React from "react";
-import { Typography, CssBaseline, Grid, Box } from "@mui/material";
-import { GitHub, LinkedIn, Email, AutoStories } from "@mui/icons-material";
+import * as React from "react";
+import Container from "@mui/material/Container";
+import Typography from "@mui/material/Typography";
+import Link from "@mui/material/Link";
+import Grid from "@mui/material/Grid";
+import { LinkedIn, GitHub } from "@mui/icons-material";
+import { Box } from "@mui/material";
 
-const Footer = () => {
+export default function Footer() {
   return (
-    <Grid container>
-      <CssBaseline />
-      <Grid
-        item
-        xs={12}
-        sm={12}
-        md={12}
-        sx={{
-          height: "130px",
-          width: "100%",
-          backgroundColor: (theme) => theme.palette.grey[200],
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <Box display="flex" alignItems="center">
-          <AutoStories />
-          <Box marginLeft={1} marginRight={3}>
-            <Typography variant="h7" style={{ fontFamily: "Lobster" }}>
-              <span style={{ display: "block" }}>Imdb</span>
-              <span style={{ display: "block", marginLeft: 5 }}>For Books</span>
+    <Box
+      component="footer"
+      sx={{
+        backgroundColor: (theme) =>
+          theme.palette.mode === "light"
+            ? theme.palette.grey[200]
+            : theme.palette.grey[800],
+        p: 1,
+      }}
+    >
+      <Container maxWidth="lg">
+        <Grid container spacing={5}>
+          <Grid item xs={12} sm={4}>
+            <Typography variant="h6" color="text.primary" gutterBottom>
+              About Us
             </Typography>
-          </Box>
-        </Box>
-        <Grid alignItems="baseline" sx={{ flexDirection: "column" }}>
-          <a
-            href="https://github.com/aydinnMustafa"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ textDecoration: "none", color: "black" }}
-          >
-            <Grid item sx={{ display: "flex", flexDirection: "row" }}>
-              <GitHub sx={{ color: "black", fontSize: 30 }} />
-              /aydinnMustafa
-            </Grid>
-          </a>
+            <Typography variant="body2" color="text.secondary">
+              Imdb for Books is a project developed by Mustafa Aydın with the
+              MERN Stack architecture. You can access all the codes of the
+              project on my Github account.
+            </Typography>
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <Typography variant="h6" color="text.primary" gutterBottom>
+              Contact Us
+            </Typography>
 
-          <a
-            href="https://www.linkedin.com/in/mustafa-aydin0/"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ textDecoration: "none", color: "black" }}
-          >
-            <Grid
-              item
-              sx={{
-                display: "flex",
-                flexDirection: "row",
-                textDecoration: "none",
-              }}
+            <Typography variant="body2" color="text.secondary">
+              E-mail address: aydinmustafa9817@gmail.com
+            </Typography>
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <Typography variant="h6" color="text.primary" gutterBottom>
+              Follow Us
+            </Typography>
+            <Link
+              href="https://www.linkedin.com/in/mustafa-aydin0/"
+              
             >
-              <LinkedIn sx={{ color: "#0A66C2", fontSize: 30 }} />
-              /mustafa-aydin0
-            </Grid>
-          </a>
-
-          <Grid item sx={{ display: "flex", flexDirection: "row" }}>
-            <Email sx={{ color: "#5F9B41", fontSize: 30 }} />
-            <Typography>aydinmustafa9817@gmail.com</Typography>
+              <LinkedIn color="#0A66C2" />
+            </Link>
+            <Link
+              href="https://www.github.com/aydinnMustafa"
+              color="inherit"
+              sx={{ pl: 1, pr: 1 }}
+            >
+              <GitHub />
+            </Link>
           </Grid>
         </Grid>
-      </Grid>
-    </Grid>
+        <Box mt={5}>
+          <Typography variant="body2" color="text.secondary" align="center">
+            {"Copyright © "}
+            Imdb for Books {new Date().getFullYear()}
+            {"."}
+          </Typography>
+        </Box>
+      </Container>
+    </Box>
   );
-};
-
-export default Footer;
+}

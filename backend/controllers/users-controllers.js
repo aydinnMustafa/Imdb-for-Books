@@ -1,8 +1,9 @@
 const User = require("../models/users-schema");
+const UserAbilities = require("../models/UserAbilities");
 const HttpError = require("../models/http-error");
 
 const signup = async (req, res, next) => {
-  console.log("kayıt olmaya giriyor mu acaba");
+  
   const { _id, fullname, email, role } = req.body;
   let existingUser;
   existingUser = await User.findOne({ email: email });
@@ -23,7 +24,7 @@ const signup = async (req, res, next) => {
 
     try {
       await createdUser.save();
-      console.log("kayıt tamam");
+     
       if (createdUser.role === "Admin" && !createdUser.canAddBook) {
         // kayıt edilen kullanıcı role admin ise kitap ekleme true.
         createdUser.canAddBook = true;
@@ -53,6 +54,15 @@ const updateUser = async (req, res, next) => {
       return next(error);
     }
 
+    const ability = UserAbilities(user);
+    if (ability.cannot('update', user)) {      // It is checked whether the user requesting the req has update authorization for the user trying to update.
+      const error = new HttpError(
+        "You are not authorized for this operation.",
+        403
+      );
+      return next(error);
+    }
+    
     // Update the found user's information with new ones
     user.fullname = fullname;
     user.email = email;

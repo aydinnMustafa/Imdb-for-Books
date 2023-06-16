@@ -1,5 +1,4 @@
 const Book = require("../models/book-schema");
-const User = require("../models/users-schema");
 const Favorite = require("../models/favorites-schema");
 const HttpError = require("../models/http-error");
 
@@ -119,7 +118,7 @@ const getFavoriteBooks = async (req, res, next) => {
     ]);
 
     const pageCount = Math.ceil(count / limit);
-    const books = favoriteBooks.map(like => like.bookId); // Sadece kitapları içeren bir dizi oluşturuyoruz
+    const books = favoriteBooks.map((like) => like.bookId); // Sadece kitapları içeren bir dizi oluşturuyoruz
 
     res.json({
       favoritebooks: books,

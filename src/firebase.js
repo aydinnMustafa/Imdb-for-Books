@@ -44,13 +44,19 @@ export const loginFunc = (
     .catch((err) => {
       let errorMessage;
       if (err.message === "Firebase: Error (auth/user-not-found).") {
-        errorMessage = "Böyle bir kullanıcı bulunamadı!";
+        errorMessage = "No user found with this e-mail address.";
       } else if (err.message === "Firebase: Error (auth/wrong-password).") {
-        errorMessage = "Şifreniz hatalı! Lütfen kontrol ediniz.";
+        errorMessage = "Your password is incorrect! Please check.";
       } else if (err.message === "Firebase: Error (auth/invalid-email).") {
-        errorMessage = "Geçersiz email adresi.";
+        errorMessage = "Invalid e-mail address.";
       } else if (err.message === "Firebase: Error (auth/internal-error).") {
-        errorMessage = "Şifre boş bırakılamaz!";
+        errorMessage = "Password cannot be left blank.";
+      } else if (
+        err.message ===
+        "Firebase: Access to this account has been temporarily disabled due to many failed login attempts. You can immediately restore it by resetting your password or you can try again later. (auth/too-many-requests)."
+      ) {
+        errorMessage =
+          "Access to this account has been temporarily restricted due to too many invalid logins. You can immediately restore it by resetting your password or you can try again later.";
       } else {
         errorMessage = err.message;
       }

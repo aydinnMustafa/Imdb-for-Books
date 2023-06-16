@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { auth } from "../firebase";
-import { Grid, Pagination } from "@mui/material";
+import { Grid, Pagination, CssBaseline } from "@mui/material";
 import { useSelector } from "react-redux";
 
 import BookItem from "../Components/BookItem";
@@ -79,7 +79,7 @@ function FavoritesPage() {
   const handlePageChange = (event, newPage) => {
     setCurrentPage(newPage);
   };
-
+  console.log(favoritesBooks);
   return (
     <React.Fragment>
       {loading && <Loading />}
@@ -109,23 +109,26 @@ function FavoritesPage() {
                   <h3>You haven't added any books to your favorites yet.</h3>
                 )}
           </Grid>
-          <Pagination
-            page={currentPage}
-            onChange={handlePageChange}
-            count={pageCount}
-            variant="outlined"
-            color="primary"
-            shape="rounded"
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              marginBottom: 2,
-            }}
-          />
+          {Object.keys(favoritesBooks).length !== 0 && (
+            <Pagination
+              page={currentPage}
+              onChange={handlePageChange}
+              count={pageCount}
+              variant="outlined"
+              color="primary"
+              shape="rounded"
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                marginBottom: 2,
+              }}
+            />
+          )}
         </Grid>
       </Grid>
-      <Footer />
+      <CssBaseline />
+      {Object.keys(favoritesBooks).length !== 0 && <Footer />}
     </React.Fragment>
   );
 }

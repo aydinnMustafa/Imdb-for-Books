@@ -1,5 +1,8 @@
 const mongoose = require("mongoose");
 
+const { accessibleRecordsPlugin } = require('@casl/mongoose');
+
+
 const userSchema = new mongoose.Schema(
   {
     _id: {
@@ -32,6 +35,10 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+userSchema.plugin(accessibleRecordsPlugin);
+
+
 const User = mongoose.model("User", userSchema);
+
 
 module.exports = User;

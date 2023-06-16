@@ -34,7 +34,7 @@ import { useHistory } from "react-router-dom";
 
 function Login() {
   const history = useHistory();
-  const [isLoginMode, setIsLoginMode] = useState(true);
+  const [isLoginMode, setIsLoginMode] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState();
@@ -83,15 +83,18 @@ function Login() {
 
     // state'lerin güncellendiği son hallerini kullanarak hataları kontrol edin
     const errorMessages = {
-      name: !isLoginMode && !userData.name ? "İsim boş olamaz." : "",
-      surname: !isLoginMode && !userData.surname ? "Soyisim boş olamaz." : "",
+      name: !isLoginMode && !userData.name ? "Name cannot be empty." : "",
+      surname:
+        !isLoginMode && !userData.surname ? "Surname cannot be empty." : "",
       email_adress: !userData.email_adress
-        ? "E-posta adresi girilmedi."
+        ? "Email cannot be empty."
         : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userData.email_adress)
-        ? "Hatalı e-posta adresi."
+        ? "Incorrect E-mail address"
         : "",
       password:
-        userData.password.length < 6 ? "Şifre en az 6 karakter olmalıdır." : "",
+        userData.password.length < 6
+          ? "Your password must consist of at least 6 characters."
+          : "",
     };
 
     setErrorMessages(errorMessages);
@@ -126,7 +129,7 @@ function Login() {
         );
       }
     } else {
-      console.log("Form hatalı!");
+      console.log("Form is invalid.");
     }
   };
 
@@ -187,24 +190,24 @@ function Login() {
       {loading === true && <Loading asOverlay />}
 
       <Container component="main" maxWidth="lg">
-      {!isSmallScreen && (
-        <Typography
-          sx={{ position: "absolute", top: 40, left: 400, fontSize: "25px" }}
-        >
-          <Typewriter
-            words={[
-              "Kitap inceleme platformuna hoş geldin!",
-              "Merak ettiğin, almadan önce incelemek istediğin bütün kitapları burada bulabilirsin.",
-              "Kolayca kayıt ol ve kitapları incelemeye başla.",
-            ]}
-            loop={10}
-            cursor
-            cursorStyle="|"
-            typeSpeed={50}
-            deleteSpeed={25}
-          />
-        </Typography>
-      )}
+        {!isSmallScreen && (
+          <Typography
+            sx={{ position: "absolute", top: 40, left: 400, fontSize: "25px" }}
+          >
+            <Typewriter
+              words={[
+                "Welcome to the book review platform!",
+                "Here you can find all the books you are curious about and want to review before buying.",
+                "Easily sign up and start reviewing books.",
+              ]}
+              loop={10}
+              cursor
+              cursorStyle="|"
+              typeSpeed={50}
+              deleteSpeed={25}
+            />
+          </Typography>
+        )}
         <Box
           sx={{
             marginTop: isSmallScreen ? 4 : 10,
@@ -254,15 +257,15 @@ function Login() {
                     checked={!isLoginMode}
                     onChange={() => switchModeHandler()}
                     sx={{
-                      width: isSmallScreen ? "33ch" :"50ch",
+                      width: isSmallScreen ? "33ch" : "50ch",
                       height: isSmallScreen ? "70px" : "100px",
                       "& .MuiSwitch-root.Mui-checked": {
                         bgcolor: "#21cc89",
                       },
 
-                      "& .MuiSwitch-thumb": { 
-                        width: isSmallScreen ? "70px" : "96px",
-                        height: isSmallScreen ? "50px" : "90px",
+                      "& .MuiSwitch-thumb": {
+                        width: isSmallScreen ? "67px" : "96px",
+                        height: isSmallScreen ? "52px" : "85px",
                         bgcolor: "#fff",
                       },
                       "& .MuiSwitch-track": {
@@ -275,19 +278,34 @@ function Login() {
                         },
 
                       "& .MuiSwitch-switchBase.Mui-checked": {
-                        transform: isSmallScreen ? "translateX(205px)" :"translateX(330px)",
+                        transform: isSmallScreen
+                          ? "translateX(208px)"
+                          : "translateX(333px)",
                       },
                     }}
                   />
 
                   <Typography
-                    variant={isSmallScreen ? "h7" : "h5" }
+                    variant={isSmallScreen ? "h7" : "h5"}
+                    onClick={switchModeHandler}
                     sx={{
                       position: "absolute",
-                      marginLeft: isSmallScreen ? 16 : 20,
+                      marginLeft: isSmallScreen ? 3 : 3,
+                      cursor: "pointer",
                     }}
                   >
-                    {isLoginMode ? "GİRİŞ" : "KAYIT"}
+                    Login
+                  </Typography>
+                  <Typography
+                    variant={isSmallScreen ? "h7" : "h5"}
+                    sx={{
+                      position: "absolute",
+                      marginLeft: isSmallScreen ? 27.5 : 43.2,
+                      cursor: "pointer",
+                    }}
+                    onClick={switchModeHandler}
+                  >
+                    Register
                   </Typography>
                 </Stack>
 
@@ -316,19 +334,23 @@ function Login() {
                         sx={{ color: "black", fontWeight: "bold" }}
                         variant="caption"
                       >
-                        GOOGLE İLE GİRİŞ YAP
+                        Sign in with Google
                       </Typography>
                     </Button>
                   </Box>
                   {!isLoginMode && (
                     <div>
                       <FormControl
-                        sx={{ mt: 0.5, width: isSmallScreen ? "32ch" : "50ch", paddingBottom: 0.5 }}
+                        sx={{
+                          mt: 0.5,
+                          width: isSmallScreen ? "32ch" : "50ch",
+                          paddingBottom: 0.5,
+                        }}
                         variant="outlined"
                         error={errorMessages.name ? true : false}
                       >
                         <InputLabel htmlFor="name" required>
-                          İsim
+                          Name
                         </InputLabel>
                         <OutlinedInput
                           id="name"
@@ -336,18 +358,22 @@ function Login() {
                           type="text"
                           autoFocus
                           required
-                          label="İsim"
+                          label="Name"
                           onChange={handleChange}
                         />
                         <FormHelperText>{errorMessages.name}</FormHelperText>
                       </FormControl>
                       <FormControl
-                        sx={{ mt: 0.5, width: isSmallScreen ? "32ch" : "50ch", paddingBottom: 0.5 }}
+                        sx={{
+                          mt: 0.5,
+                          width: isSmallScreen ? "32ch" : "50ch",
+                          paddingBottom: 0.5,
+                        }}
                         variant="outlined"
                         error={errorMessages.surname ? true : false}
                       >
                         <InputLabel htmlFor="surname" required>
-                          Soyisim
+                          Surname
                         </InputLabel>
                         <OutlinedInput
                           id="surname"
@@ -355,7 +381,7 @@ function Login() {
                           type="text"
                           autoFocus
                           required
-                          label="Soyisim"
+                          label="Surname"
                           onChange={handleChange}
                         />
                         <FormHelperText>{errorMessages.surname}</FormHelperText>
@@ -367,13 +393,12 @@ function Login() {
                       mt: 0.5,
                       paddingBottom: 0.5,
                       width: isSmallScreen ? "32ch" : "50ch",
-                      
                     }}
                     variant="outlined"
                     error={errorMessages.email_adress ? true : false}
                   >
                     <InputLabel htmlFor="email_adress" required>
-                      Email Adresi
+                      E-maill Adress
                     </InputLabel>
                     <OutlinedInput
                       id="email_adress"
@@ -381,7 +406,7 @@ function Login() {
                       type="email"
                       autoFocus
                       required
-                      label="Email Adresi"
+                      label="E-maill Adress"
                       onChange={handleChange}
                     />
                     <FormHelperText>
@@ -393,13 +418,12 @@ function Login() {
                     sx={{
                       mt: 0.5,
                       width: isSmallScreen ? "32ch" : "50ch",
-                      
                     }}
                     variant="outlined"
                     error={errorMessages.password ? true : false}
                   >
                     <InputLabel htmlFor="password" required>
-                      Şifre
+                      Password
                     </InputLabel>
                     <OutlinedInput
                       id="password"
@@ -420,7 +444,7 @@ function Login() {
                           </IconButton>
                         </InputAdornment>
                       }
-                      label="Şifre"
+                      label="Password"
                     />
                     <FormHelperText>{errorMessages.password}</FormHelperText>
                   </FormControl>
@@ -445,7 +469,7 @@ function Login() {
                     variant="contained"
                     sx={{ mt: 2.5, mb: 2 }}
                   >
-                    {isLoginMode ? "GİRİŞ YAP" : "KAYIT OL"}
+                    {isLoginMode ? "Login" : "Register"}
                   </Button>
                   {error && (
                     <Stack>

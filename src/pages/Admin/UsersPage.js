@@ -138,8 +138,8 @@ export default function UsersPage() {
 
   const handleUpdate = async () => {
     const errorMessages = {
-      fullname: !userData.fullname ? "Name cannot be empty" : "",
-      email: !userData.email ? "Email cannot be empty" : "",
+      fullname: !userData.fullname ? "Name cannot be empty." : "",
+      email: !userData.email ? "Email cannot be empty." : "",
       role: !userData.role ? "Role cannot be empty." : "",
     };
 

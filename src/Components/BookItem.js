@@ -19,7 +19,6 @@ function BookItem(props) {
         height: "100%",
         justifyContent: "space-between",
         maxWidth: 320,
-        minHeight: 435,
         border: "solid 2px gray",
         borderRadius: 2,
       }}

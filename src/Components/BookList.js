@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Grid, Pagination } from "@mui/material";
+import { Grid, Pagination, CssBaseline } from "@mui/material";
 import axios from "axios";
 import { auth } from "../firebase";
 import { useSelector } from "react-redux";
@@ -144,7 +144,7 @@ const BookList = () => {
           )}
         </Grid>
       </Grid>
-     
+      <CssBaseline />
     </React.Fragment>
   );
 };
