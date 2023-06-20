@@ -1,6 +1,6 @@
 const admin = require("../firebase-config");
 const User = require("../models/users-schema");
-const HttpError = require("../models/http-error");
+const HttpError = require("./errorHandler");
 
 const auth = async (req, res, next) => {
   try {

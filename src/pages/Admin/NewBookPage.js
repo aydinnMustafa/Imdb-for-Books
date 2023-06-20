@@ -18,13 +18,17 @@ import { auth } from "../../firebase";
 
 const NewBookPage = () => {
   const userId = auth.currentUser.uid;
-  const [openAlert, setOpenAlert] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [alertState, setAlertState] = useState({
+    severity: null,
+    openAlert: false,
+    alertMessage: "",
+  });
   const [bookData, setBookData] = useState({
     name: "",
     author: "",
     publisher: "",
-    star: 0,
+    star: 1,
     image: "",
     language: "",
     pages: "",
@@ -34,7 +38,6 @@ const NewBookPage = () => {
     name: null,
     author: null,
     publisher: null,
-    star: null,
     image: null,
     language: null,
     pages: null,
@@ -44,7 +47,7 @@ const NewBookPage = () => {
     if (reason === "clickaway") {
       return;
     }
-    setOpenAlert(false);
+    setAlertState((prevState) => ({ ...prevState, openAlert: false }));
   };
   const handleChange = (event) => {
     setBookData((prevState) => ({
@@ -64,7 +67,7 @@ const NewBookPage = () => {
       name: !bookData.name ? "Name cannot be empty" : "",
       author: !bookData.author ? "Author cannot be empty" : "",
       publisher: !bookData.publisher ? "Publisher cannot be empty." : "",
-      image: !bookData.image ? "Image cannot be empty." : "",
+      image: !bookData.image ? "Image Url cannot be empty." : "",
       language: !bookData.language ? "Language cannot be empty." : "",
       pages: !bookData.pages ? "Number of pages cannot be empty" : "",
       description:
@@ -75,17 +78,13 @@ const NewBookPage = () => {
 
     setErrorMessages(errorMessages);
 
-    // hata mesajlarının güncellendiğinden emin olmak için bekleyin
-    await new Promise((resolve) => setTimeout(resolve, 0));
-
-    // state'lerin güncellendiği son hallerini kullanarak submit işlemini gerçekleştirin
     const isFormValid = Object.values(errorMessages).every(
       (errorMsg) => errorMsg === ""
     );
     if (isFormValid) {
       setLoading(true);
       try {
-        axios.post(
+        const response = await axios.post(
           process.env.REACT_APP_BACKEND_URL + `/admin/book/add`,
           {
             userId: userId,
@@ -106,19 +105,30 @@ const NewBookPage = () => {
           }
         );
         setLoading(false);
-        setOpenAlert(true);
+        setAlertState((prevState) => ({
+          ...prevState,
+          alertMessage: response.data.message,
+          openAlert: true,
+          severity: "success",
+        }));
         setBookData({
           name: "",
           author: "",
           publisher: "",
-          star: 0,
+          star: 1,
           image: "",
           language: "",
           pages: "",
           description: "",
         });
       } catch (err) {
-        console.error(err);
+        setAlertState((prevState) => ({
+          ...prevState,
+          alertMessage: err.response.data.error,
+          openAlert: true,
+          severity: "error",
+        }));
+        setLoading(false);
       }
     }
   };
@@ -128,7 +138,7 @@ const NewBookPage = () => {
         <Card sx={{ height: 650 }}>
           {loading && <Loading asOverlay />}
           <Snackbar
-            open={openAlert}
+            open={alertState.openAlert}
             autoHideDuration={2000}
             onClose={handleAlertClose}
             anchorOrigin={{
@@ -139,10 +149,10 @@ const NewBookPage = () => {
           >
             <Alert
               onClose={handleAlertClose}
-              severity="success"
+              severity={alertState.severity}
               sx={{ width: "100%" }}
             >
-              The book has been successfully added.
+              {alertState.alertMessage}
             </Alert>
           </Snackbar>
 
@@ -241,7 +251,6 @@ const NewBookPage = () => {
                       id="star"
                       name="star"
                       value={bookData.star}
-                      
                       style={{ verticalAlign: "top", marginLeft: 2 }}
                       onChange={handleChange}
                     />

@@ -1,6 +1,5 @@
 const Book = require("../models/book-schema");
 const Favorite = require("../models/favorites-schema");
-const HttpError = require("../models/http-error");
 
 const getBooks = async (req, res, next) => {
   try {
@@ -15,16 +14,17 @@ const getBooks = async (req, res, next) => {
     const books = await Book.find().skip(skip).limit(limit);
 
     if (!books || books.length === 0) {
-      const error = new HttpError("Could not find books.", 404);
+      const error = new Error("Could not find books.");
+      error.code = 404;
       return next(error);
     }
 
     res.json({ books: books, pageCount: pageCount });
   } catch (err) {
-    const error = new HttpError(
-      "Books could not be brought. Please try again later.",
-      500
+    const error = new Error(
+      "Books could not be fetch. Please try again later."
     );
+    error.code = 500;
     return next(error);
   }
 };
@@ -35,61 +35,40 @@ const getBookById = async (req, res, next) => {
     const book = await Book.findById(bookId);
 
     if (!book) {
-      const error = new HttpError(
-        "Could not find a book with the provided ID.",
-        404
-      );
+      const error = new Error("Could not find a book with the provided ID.");
+      error.code = 404;
       return next(error);
     }
 
     res.json({ book: book });
   } catch (err) {
-    next(err);
+    const error = new Error("Book could not be fetch. Please try again later.");
+    error.code = 500;
+    return next(error);
   }
 };
 
 const addFavoriteBook = async (req, res, next) => {
-  const { userId, bookId } = req.body;
-  const newLike = new Favorite({
-    userId,
-    bookId,
-  });
+  try {
+    const { userId, bookId } = req.body;
+    const newLike = new Favorite({ userId, bookId });
 
-  Favorite.findOne({ userId: userId, bookId: bookId })
-    .then(function (like) {
-      if (like) {
-        // The book has already been liked
-        Favorite.findByIdAndRemove(like._id)
-          .then(function () {
-            res.json({ liked: false });
-          })
-          .catch(function (err) {
-            const error = new HttpError("Something went wrong.", 500);
-            return next(error);
-          });
-      } else {
-        // Create a new like save
-        newLike
-          .save()
-          .then(function () {
-            res.json({ liked: true });
-          })
-          .catch(function (err) {
-            const error = new HttpError(
-              "Failed to save book to favorites.",
-              500
-            );
-            return next(error);
-          });
-      }
-    })
-    .catch(function (err) {
-      const error = new HttpError(
-        "The book could not be added to favourites. Please try again later.",
-        500
-      );
-      return next(error);
-    });
+    const like = await Favorite.findOne({ userId: userId, bookId: bookId });
+
+    if (like) {
+      // The book has already been liked
+      await Favorite.findByIdAndRemove(like._id);
+      res.json({ liked: false });
+    } else {
+      // New like save
+      await newLike.save();
+      res.json({ liked: true });
+    }
+  } catch (err) {
+    const error = new Error("Something went wrong. Please try again.");
+    error.code = 500;
+    return next(error);
+  }
 };
 
 const getFavoriteBooks = async (req, res, next) => {
@@ -97,7 +76,8 @@ const getFavoriteBooks = async (req, res, next) => {
     const { userId } = req.body;
 
     if (!userId) {
-      const error = new HttpError("User ID not found.", 404);
+      const error = new Error("User ID not found.");
+      error.code = 404;
       return next(error);
     }
 
@@ -125,10 +105,8 @@ const getFavoriteBooks = async (req, res, next) => {
       pageCount: pageCount,
     });
   } catch (err) {
-    const error = new HttpError(
-      "Something went wrong. Please try again later.",
-      500
-    );
+    const error = new Error("Something went wrong. Please try again.");
+    error.code = 500;
     return next(error);
   }
 };

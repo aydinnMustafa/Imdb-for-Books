@@ -21,6 +21,11 @@ import {
   Box,
   Button,
   TextField,
+  InputLabel,
+  Select,
+  FormControl,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import { MoreVert, Edit, Delete, Cancel, Update } from "@mui/icons-material";
 import Loading from "../../Components/Loading";
@@ -76,11 +81,17 @@ function applySortFilter(array, comparator, query) {
 export default function UsersPage() {
   const [open, setOpen] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [fetchError, setFetchError] = useState(false);
+  const [alertState, setAlertState] = useState({
+    severity: null,
+    openAlert: false,
+    alertMessage: "",
+  });
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [page, setPage] = useState(0);
   const [order, setOrder] = useState("asc");
-  const [selected, setSelected] = useState([]);
+  const [selectedUser, setSelectedUser] = useState("");
   const [orderBy, setOrderBy] = useState("fullname");
   const [filterName, setFilterName] = useState("");
   const [rowsPerPage, setRowsPerPage] = useState(5);
@@ -94,7 +105,6 @@ export default function UsersPage() {
   const [errorMessages, setErrorMessages] = useState({
     fullname: null,
     email: null,
-    role: null,
   });
 
   const userToken = auth.currentUser.accessToken;
@@ -111,7 +121,9 @@ export default function UsersPage() {
       );
       setLoadedUsers(response.data.users);
     } catch (err) {
-      console.error(err);
+      setFetchError(true);
+      setLoading(false);
+      
     }
   }, [userToken]);
 
@@ -130,22 +142,21 @@ export default function UsersPage() {
     }));
   };
   const handleEdit = async () => {
-    const selectedUser = selected[0];
     const foundUser = loadedUsers.find((user) => user._id === selectedUser);
-    console.log(foundUser);
     setUserData({ ...foundUser });
   };
 
   const handleUpdate = async () => {
     const errorMessages = {
       fullname: !userData.fullname ? "Name cannot be empty." : "",
-      email: !userData.email ? "Email cannot be empty." : "",
-      role: !userData.role ? "Role cannot be empty." : "",
+      email: !userData.email
+        ? "Email cannot be empty."
+        : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userData.email)
+        ? "Incorrect E-mail address"
+        : "",
     };
 
     setErrorMessages(errorMessages);
-    // hata mesajlarının güncellendiğinden emin olmak için bekleyin
-    await new Promise((resolve) => setTimeout(resolve, 0));
 
     // state'lerin güncellendiği son hallerini kullanarak submit işlemini gerçekleştirin
     const isFormValid = Object.values(errorMessages).every(
@@ -156,9 +167,8 @@ export default function UsersPage() {
       setEditModalOpen(false);
       setOpen(null);
       setLoading(true);
-      const selectedUser = selected[0];
       try {
-        axios.patch(
+        const response = await axios.patch(
           process.env.REACT_APP_BACKEND_URL + `/admin/user/${selectedUser}`,
           {
             fullname: userData.fullname,
@@ -172,18 +182,27 @@ export default function UsersPage() {
             },
           }
         );
-        console.log("update başarılı");
-        setSelected([]);
+        setSelectedUser("");
         setTimeout(function () {
           // Since the database is not updated as soon as the update process is finished, we wait for one second and fetch the data.
           fetchUsers();
-        }, 1000);
-        setLoading(false);
+          setAlertState((prevState) => ({
+            ...prevState,
+            alertMessage: response.data.message,
+            openAlert: true,
+            severity: "success",
+          }));
+          setLoading(false);
+        }, 1300);
       } catch (err) {
-        console.error(err);
+        setAlertState((prevState) => ({
+          ...prevState,
+          alertMessage: err.response.data.error,
+          openAlert: true,
+          severity: "error",
+        }));
+        setLoading(false);
       }
-    } else {
-      console.log("Form inputs incorrect.");
     }
   };
 
@@ -191,9 +210,8 @@ export default function UsersPage() {
     setDeleteModalOpen(false);
     setOpen(null);
     setLoading(true);
-    const selectedUser = selected[0];
     try {
-      await axios.delete(
+      const response = await axios.delete(
         process.env.REACT_APP_BACKEND_URL + `/admin/user/${selectedUser}`,
         {
           headers: {
@@ -202,11 +220,23 @@ export default function UsersPage() {
           },
         }
       );
-      setSelected([]);
+      setSelectedUser("");
+      setAlertState((prevState) => ({
+        ...prevState,
+        alertMessage: response.data.message,
+        openAlert: true,
+        severity: "success",
+      }));
       fetchUsers();
       setLoading(false);
     } catch (err) {
-      console.error(err);
+      setAlertState((prevState) => ({
+        ...prevState,
+        alertMessage: err.response.data.error,
+        openAlert: true,
+        severity: "error",
+      }));
+      setLoading(false);
     }
   };
 
@@ -218,6 +248,13 @@ export default function UsersPage() {
     setOpen(null);
   };
 
+  const handleAlertClose = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setAlertState((prevState) => ({ ...prevState, openAlert: false }));
+  };
+
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === "asc";
     setOrder(isAsc ? "desc" : "asc");
@@ -225,21 +262,7 @@ export default function UsersPage() {
   };
 
   const handleClick = (event, _id) => {
-    const selectedIndex = selected.indexOf(_id);
-    let newSelected = [];
-    if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selected, _id);
-    } else if (selectedIndex === 0) {
-      newSelected = newSelected.concat(selected.slice(1));
-    } else if (selectedIndex === selected.length - 1) {
-      newSelected = newSelected.concat(selected.slice(0, -1));
-    } else if (selectedIndex > 0) {
-      newSelected = newSelected.concat(
-        selected.slice(0, selectedIndex),
-        selected.slice(selectedIndex + 1)
-      );
-    }
-    setSelected(newSelected);
+    setSelectedUser(_id);
   };
 
   const handleChangePage = (event, newPage) => {
@@ -260,11 +283,31 @@ export default function UsersPage() {
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - loadedUsers.length) : 0;
 
   if (!loadedUsers || loadedUsers.length === 0) {
-    return (
-      <div style={{ marginLeft: 500 }}>
-        <Loading />
-      </div>
-    );
+    if (fetchError) {
+      return (
+        <div
+          style={{
+            position: "fixed",
+            top: "50%",
+            left: "55%",
+            transform: "translate(-50%, -50%)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 2,
+          }}
+        >
+          An error occurred while loading users. Please try again by refreshing
+          the page.
+        </div>
+      );
+    } else {
+      return (
+        <div style={{ marginLeft: 500 }}>
+          <Loading />
+        </div>
+      );
+    }
   }
 
   const filteredUsers = applySortFilter(
@@ -278,11 +321,29 @@ export default function UsersPage() {
   return (
     <>
       <title> Users</title>
-      {loading && <Loading asOverlay />}
+
       <Container style={{ marginTop: "13vh" }}>
+        {loading && <Loading asOverlay />}
+        <Snackbar
+          open={alertState.openAlert}
+          autoHideDuration={2000}
+          onClose={handleAlertClose}
+          anchorOrigin={{
+            vertical: "top",
+            horizontal: "right",
+          }}
+          sx={{ marginTop: "60px" }}
+        >
+          <Alert
+            onClose={handleAlertClose}
+            severity={alertState.severity}
+            sx={{ width: "100%" }}
+          >
+            {alertState.alertMessage}
+          </Alert>
+        </Snackbar>
         <Card>
           <ListToolbar
-            numSelected={selected.length}
             filterName={filterName}
             onFilterName={handleFilterByName}
           />
@@ -294,7 +355,6 @@ export default function UsersPage() {
                 orderBy={orderBy}
                 headLabel={TABLE_HEAD}
                 rowCount={loadedUsers.length}
-                numSelected={selected.length}
                 onRequestSort={handleRequestSort}
               />
               <TableBody>
@@ -302,16 +362,9 @@ export default function UsersPage() {
                   .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                   .map((row) => {
                     const { fullname, role, email, _id } = row;
-                    const selectedUser = selected.indexOf(_id) !== -1;
 
                     return (
-                      <TableRow
-                        hover
-                        key={_id}
-                        tabIndex={-1}
-                        role="checkbox"
-                        selected={selectedUser}
-                      >
+                      <TableRow hover key={_id} selected={selectedUser === _id}>
                         <TableCell component="th" scope="row" padding="normal">
                           <Stack
                             direction="row"
@@ -404,7 +457,7 @@ export default function UsersPage() {
         anchorEl={open}
         onClose={() => {
           handleCloseMenu();
-          setSelected([]);
+          setSelectedUser("");
         }}
         anchorOrigin={{ vertical: "top", horizontal: "left" }}
         transformOrigin={{ vertical: "top", horizontal: "right" }}
@@ -445,8 +498,7 @@ export default function UsersPage() {
               top: "50%",
               left: "50%",
               transform: "translate(-50%, -50%)",
-              width: 1000,
-              maxWidth: "90vw",
+              width: 300,
               bgcolor: "background.paper",
               borderRadius: 8,
               boxShadow: 24,
@@ -456,7 +508,7 @@ export default function UsersPage() {
             }}
           >
             <Box sx={{ display: "flex" }}>
-              <Box sx={{ flex: 1, mr: 2 }}>
+              <Box sx={{ flex: 1 }}>
                 <TextField
                   error={errorMessages.fullname ? true : false}
                   helperText={errorMessages.fullname}
@@ -473,33 +525,37 @@ export default function UsersPage() {
                   helperText={errorMessages.email}
                   id="email"
                   name="email"
-                  label="Email"
+                  label="Email Address"
                   value={userData.email}
                   onChange={handleChange}
                   sx={{ paddingBottom: 1 }}
                   fullWidth
                 />
-                <TextField
-                  error={errorMessages.role ? true : false}
-                  helperText={errorMessages.role}
-                  id="role"
-                  name="role"
-                  value={userData.role}
-                  onChange={handleChange}
-                  label="Role"
-                  sx={{ paddingBottom: 1 }}
-                  fullWidth
-                />
+                <FormControl fullWidth>
+                  <InputLabel id="role-label">Role</InputLabel>
+                  <Select
+                    labelId="role-label"
+                    id="role"
+                    value={userData.role}
+                    name="role"
+                    label="Role"
+                    onChange={handleChange}
+                  >
+                    <MenuItem value="Admin">Admin</MenuItem>
+                    <MenuItem value="Editor">Editor</MenuItem>
+                    <MenuItem value="User">User</MenuItem>
+                  </Select>
+                </FormControl>
               </Box>
             </Box>
 
-            <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
+            <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
               <Button
                 variant="contained"
                 onClick={handleUpdate}
                 startIcon={<Update />}
                 sx={{
-                  mr: 2,
+                  mr: 3,
                   backgroundColor: "green",
                   "&:hover": { backgroundColor: "#18691c" },
                 }}
@@ -512,13 +568,7 @@ export default function UsersPage() {
                   setErrorMessages({
                     //Clear all old error messages when clicking Cancel.
                     name: null,
-                    author: null,
-                    publisher: null,
-                    star: null,
-                    image: null,
-                    language: null,
-                    pages: null,
-                    description: null,
+                    email: null,
                   });
                   setEditModalOpen(false);
                 }}

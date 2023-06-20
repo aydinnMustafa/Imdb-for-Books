@@ -2,7 +2,6 @@ const User = require("../models/users-schema");
 const UserAbilities = require("../models/UserAbilities");
 const Book = require("../models/book-schema");
 const Favorite = require("../models/favorites-schema");
-const HttpError = require("../models/http-error");
 const firebase_admin = require("../firebase-config");
 
 const addBook = async (req, res, next) => {
@@ -23,18 +22,14 @@ const addBook = async (req, res, next) => {
     let reqUser = req.user;
     const ability = UserAbilities(reqUser);
     if (ability.cannot("create", "Book")) {
-      const error = new HttpError(
-        "You are not authorized for this operation.",
-        403
-      );
+      const error = new Error("You are not authorized for this operation.");
+      error.code = 403;
       return next(error);
     }
 
     if (!user || !user.canAddBook) {
-      const error = new HttpError(
-        "You have submitted an unauthorized request.",
-        403
-      );
+      const error = new Error("You have submitted an unauthorized request.");
+      error.code = 403;
       return next(error);
     }
 
@@ -52,13 +47,12 @@ const addBook = async (req, res, next) => {
     await book.save();
     user.addedBooks.push(book._id);
     await user.save();
-    res.status(201).json({ message: "Book added.", book: book });
+    res.status(201).json({ message: "The book has been successfully added." });
   } catch (err) {
-    console.log(err);
-    const error = new HttpError(
-      "The book could not be added. Please try again later.",
-      500
+    const error = new Error(
+      "The book could not be added. Please try again later."
     );
+    error.code = 403;
     return next(error);
   }
 };
@@ -67,16 +61,17 @@ const getBooks = async (req, res, next) => {
   try {
     const books = await Book.find();
     if (!books) {
-      const error = new HttpError("Could not find books.", 404);
+      const error = new Error("Could not find books.");
+      error.code = 404;
       return next(error);
     }
 
     res.json({ books: books });
   } catch (err) {
-    const error = new HttpError(
-      "Books could not be brought. Please try again later.",
-      500
+    const error = new Error(
+      "Books could not be fetch. Please try again later."
     );
+    error.code = 500;
     return next(error);
   }
 };
@@ -89,10 +84,8 @@ const updateBook = async (req, res, next) => {
     let reqUser = req.user;
     const ability = UserAbilities(reqUser);
     if (ability.cannot("update", "Book")) {
-      const error = new HttpError(
-        "You are not authorized for this operation.",
-        403
-      );
+      const error = new Error("You are not authorized for this operation.");
+      error.code = 403;
       return next(error);
     }
 
@@ -108,15 +101,14 @@ const updateBook = async (req, res, next) => {
     });
 
     if (!updatedBook) {
-      const error = new HttpError("The book could not be found.", 404);
+      const error = new Error("The book could not be found.");
+      error.code = 404;
       return next(error);
     }
-    res.status(200).send("Book updated.");
+    res.status(200).json({ message: "The book has been successfully updated." });
   } catch (err) {
-    const error = new HttpError(
-      "The book could not be updated. Please try again.",
-      500
-    );
+    const error = new Error("The book could not be updated. Please try again.");
+    error.code = 500;
     return next(error);
   }
 };
@@ -128,30 +120,27 @@ const deleteBook = async (req, res, next) => {
     let reqUser = req.user;
     const ability = UserAbilities(reqUser);
     if (ability.cannot("delete", "Book")) {
-      const error = new HttpError(
-        "You are not authorized for this operation.",
-        403
-      );
+      const error = new Error("You are not authorized for this operation.");
+      error.code = 403;
       return next(error);
     }
 
     const deletedBook = await Book.findByIdAndDelete(bookId);
     if (!deletedBook) {
-      const error = new HttpError(
-        "The information of the book to be deleted could not be found.",
-        404
+      const error = new Error(
+        "The information of the book to be deleted could not be found."
       );
+      error.code = 404;
       return next(error);
     }
     await Favorite.deleteMany({ bookId: bookId });
 
-    res.status(200).send("Book deleted.");
+    res.status(200).json({ message: "The book has been successfully deleted." });
   } catch (err) {
-    console.log(err);
-    const error = new HttpError(
-      "The book could not be deleted. Please try again later.",
-      500
+    const error = new Error(
+      "The book could not be deleted. Please try again later."
     );
+    error.code = 500;
     return next(error);
   }
 };
@@ -161,26 +150,23 @@ const getUsers = async (req, res, next) => {
     const users = await User.find();
 
     if (!users) {
-      const error = new HttpError("Could not find users.", 404);
+      const error = new Error("Could not find users.");
+      error.code = 404;
       return next(error);
     }
 
     let reqUser = req.user;
     const ability = UserAbilities(reqUser);
     if (ability.cannot("read", "User")) {
-      const error = new HttpError(
-        "You are not authorized for this operation.",
-        403
-      );
+      const error = new Error("You are not authorized for this operation.");
+      error.code = 403;
       return next(error);
     }
 
     res.json({ users: users });
   } catch (err) {
-    const error = new HttpError(
-      "Failed to fetch users. Please try again.",
-      500
-    );
+    const error = new Error("Failed to fetch users. Please try again.");
+    error.code = 500;
     return next(error);
   }
 };
@@ -192,18 +178,17 @@ const updateUser = async (req, res, next) => {
   try {
     const user = await User.findById(userId);
     if (!user) {
-      const error = new HttpError("The user could not be found.", 404);
+      const error = new Error("The user could not be found.");
+      error.code = 404;
       return next(error);
     }
 
     let reqUser = req.user;
     const ability = UserAbilities(reqUser);
-    if (!ability.can("update", user)) {
+    if (ability.cannot("update", user)) {
       // It is checked whether the user requesting the req has update authorization for the user trying to update.
-      const error = new HttpError(
-        "You are not authorized for this operation.",
-        403
-      );
+      const error = new Error("You are not authorized for this operation.");
+      error.code = 403;
       return next(error);
     }
 
@@ -234,11 +219,8 @@ const updateUser = async (req, res, next) => {
       .status(200)
       .json({ message: "The user has been successfully updated." });
   } catch (err) {
-    console.log(err);
-    const error = new HttpError(
-      "The user could not be updated. Please try again.",
-      500
-    );
+    const error = new Error("The user could not be updated. Please try again.");
+    error.code = 500;
     return next(error);
   }
 };
@@ -251,10 +233,8 @@ const deleteUser = async (req, res, next) => {
     let reqUser = req.user;
     const ability = UserAbilities(reqUser);
     if (ability.cannot("delete", "User")) {
-      const error = new HttpError(
-        "You are not authorized for this operation.",
-        403
-      );
+      const error = new Error("You are not authorized for this operation.");
+      error.code = 403;
       return next(error);
     }
 
@@ -267,11 +247,8 @@ const deleteUser = async (req, res, next) => {
       .status(200)
       .json({ message: "The user has been successfully deleted." });
   } catch (err) {
-    console.log(err);
-    const error = new HttpError(
-      "The user could not be deleted. Please try again.",
-      500
-    );
+    const error = new Error("The user could not be deleted. Please try again.");
+    error.code = 500;
     return next(error);
   }
 };

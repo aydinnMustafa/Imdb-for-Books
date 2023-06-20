@@ -21,6 +21,8 @@ import {
   Modal,
   TextField,
   Rating,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import { MoreVert, Edit, Delete, Update, Cancel } from "@mui/icons-material";
 import Loading from "../../Components/Loading";
@@ -74,11 +76,17 @@ function applySortFilter(array, comparator, query) {
 export default function BooksPage() {
   const [open, setOpen] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [fetchError, setFetchError] = useState(false);
+  const [alertState, setAlertState] = useState({
+    severity: null,
+    openAlert: false,
+    alertMessage: "",
+  });
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [page, setPage] = useState(0);
   const [order, setOrder] = useState("asc");
-  const [selected, setSelected] = useState([]);
+  const [selectedBook, setSelectedBook] = useState("");
   const [orderBy, setOrderBy] = useState("name");
   const [filterName, setFilterName] = useState("");
   const [rowsPerPage, setRowsPerPage] = useState(5);
@@ -104,7 +112,6 @@ export default function BooksPage() {
     pages: null,
     description: null,
   });
-
   const userToken = auth.currentUser.accessToken;
   const fetchBooks = useCallback(async () => {
     try {
@@ -119,7 +126,8 @@ export default function BooksPage() {
       );
       setLoadedBooks(response.data.books);
     } catch (err) {
-      console.error(err);
+      setFetchError(true);
+      setLoading(false);
     }
   }, [userToken]);
 
@@ -166,10 +174,6 @@ export default function BooksPage() {
 
     setErrorMessages(errorMessages);
 
-    // hata mesajlarının güncellendiğinden emin olmak için bekleyin
-    await new Promise((resolve) => setTimeout(resolve, 0));
-
-    // state'lerin güncellendiği son hallerini kullanarak submit işlemini gerçekleştirin
     const isFormValid = Object.values(errorMessages).every(
       (errorMsg) => errorMsg === ""
     );
@@ -177,9 +181,8 @@ export default function BooksPage() {
       setEditModalOpen(false);
       setOpen(null);
       setLoading(true);
-      const selectedBook = selected[0];
       try {
-        axios.patch(
+        const response = await axios.patch(
           process.env.REACT_APP_BACKEND_URL + `/admin/book/${selectedBook}`,
           {
             name: bookData.name,
@@ -198,22 +201,33 @@ export default function BooksPage() {
             },
           }
         );
-        setSelected([]);
+        setSelectedBook("");
         setTimeout(function () {
           // Since the database is not updated as soon as the update process is finished, we wait for one second and fetch the data.
           fetchBooks();
           setLoading(false);
+          setAlertState((prevState) => ({
+            ...prevState,
+            alertMessage: response.data.message,
+            openAlert: true,
+            severity: "success",
+          }));
         }, 1000);
       } catch (err) {
-        console.error(err);
+        setLoading(false);
+        setAlertState((prevState) => ({
+          ...prevState,
+          alertMessage: err.response.data.error,
+          openAlert: true,
+          severity: "error",
+        }));
       }
     } else {
       console.log("Form inputs incorrect.");
     }
   };
-
+console.log(bookData);
   const handleEdit = async () => {
-    const selectedBook = selected[0];
     const foundBook = loadedBooks.find((book) => book._id === selectedBook);
     setBookData({ ...foundBook });
   };
@@ -234,9 +248,8 @@ export default function BooksPage() {
     setDeleteModalOpen(false);
     setOpen(null);
     setLoading(true);
-    const selectedBook = selected[0];
     try {
-      await axios.delete(
+      const response = await axios.delete(
         process.env.REACT_APP_BACKEND_URL + `/admin/book/${selectedBook}`,
         {
           headers: {
@@ -245,30 +258,35 @@ export default function BooksPage() {
           },
         }
       );
-      setSelected([]);
+      setSelectedBook("");
       fetchBooks();
       setLoading(false);
+      setAlertState((prevState) => ({
+        ...prevState,
+        alertMessage: response.data.message,
+        openAlert: true,
+        severity: "success",
+      }));
     } catch (err) {
-      console.error(err);
+      setAlertState((prevState) => ({
+        ...prevState,
+        alertMessage: err.response.data.error,
+        openAlert: true,
+        severity: "error",
+      }));
+      setLoading(false);
     }
   };
 
   const handleClick = (event, _id) => {
-    const selectedIndex = selected.indexOf(_id);
-    let newSelected = [];
-    if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selected, _id);
-    } else if (selectedIndex === 0) {
-      newSelected = newSelected.concat(selected.slice(1));
-    } else if (selectedIndex === selected.length - 1) {
-      newSelected = newSelected.concat(selected.slice(0, -1));
-    } else if (selectedIndex > 0) {
-      newSelected = newSelected.concat(
-        selected.slice(0, selectedIndex),
-        selected.slice(selectedIndex + 1)
-      );
+    setSelectedBook(_id);
+  };
+
+  const handleAlertClose = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
     }
-    setSelected(newSelected);
+    setAlertState((prevState) => ({ ...prevState, openAlert: false }));
   };
 
   const handleChangePage = (event, newPage) => {
@@ -286,11 +304,30 @@ export default function BooksPage() {
   };
 
   if (!loadedBooks || loadedBooks.length === 0) {
-    return (
-      <div style={{ marginLeft: 500 }}>
-        <Loading />
-      </div>
-    );
+    if (fetchError) {
+      return (
+        <div
+        style={{
+          position: "fixed",
+          top: "50%",
+          left: "55%",
+          transform: "translate(-50%, -50%)",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          zIndex: 2,
+        }}
+        >
+         An error occurred while loading books. Please try again by refreshing the page.
+        </div>
+      );
+    } else {
+      return (
+        <div style={{ marginLeft: 500 }}>
+          <Loading />
+        </div>
+      );
+    }
   }
 
   const emptyRows =
@@ -309,10 +346,27 @@ export default function BooksPage() {
       <title> Books</title>
 
       <Container style={{ marginTop: "13vh" }}>
-      {loading && <Loading asOverlay />}
+        {loading && <Loading asOverlay />}
+        <Snackbar
+          open={alertState.openAlert}
+          autoHideDuration={2000}
+          onClose={handleAlertClose}
+          anchorOrigin={{
+            vertical: "top",
+            horizontal: "right",
+          }}
+          sx={{ marginTop: "60px" }}
+        >
+          <Alert
+            onClose={handleAlertClose}
+            severity={alertState.severity}
+            sx={{ width: "100%" }}
+          >
+            {alertState.alertMessage}
+          </Alert>
+        </Snackbar>
         <Card>
           <ListToolbar
-            numSelected={selected.length}
             filterName={filterName}
             onFilterName={handleFilterByName}
           />
@@ -324,7 +378,6 @@ export default function BooksPage() {
                 orderBy={orderBy}
                 headLabel={TABLE_HEAD}
                 rowCount={loadedBooks.length}
-                numSelected={selected.length}
                 onRequestSort={handleRequestSort}
               />
               <TableBody>
@@ -332,16 +385,9 @@ export default function BooksPage() {
                   .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                   .map((row) => {
                     const { name, pages, author, _id } = row;
-                    const selectedBook = selected.indexOf(_id) !== -1;
 
                     return (
-                      <TableRow
-                        hover
-                        key={_id}
-                        tabIndex={-1}
-                        role="checkbox"
-                        selected={selectedBook}
-                      >
+                      <TableRow hover key={_id} selected={selectedBook === _id}>
                         <TableCell component="th" scope="row" padding="normal">
                           <Stack
                             direction="row"
@@ -429,7 +475,7 @@ export default function BooksPage() {
         anchorEl={open}
         onClose={() => {
           handleCloseMenu();
-          setSelected([]);
+          setSelectedBook("");
         }}
         anchorOrigin={{ vertical: "top", horizontal: "left" }}
         transformOrigin={{ vertical: "top", horizontal: "right" }}

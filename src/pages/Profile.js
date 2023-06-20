@@ -17,7 +17,7 @@ import OutlinedInput from "@mui/material/OutlinedInput";
 import InputLabel from "@mui/material/InputLabel";
 import Avatar from "@mui/material/Avatar";
 import useMediaQuery from "@mui/material/useMediaQuery";
-import DefaultAvatar from '../assets/default-avatar.jpg';
+import DefaultAvatar from "../assets/default-avatar.jpg";
 import axios from "axios";
 
 import {
@@ -25,7 +25,7 @@ import {
   EmailAuthProvider,
   updateProfile,
   updateEmail,
-  updatePassword
+  updatePassword,
 } from "firebase/auth";
 import { auth } from "../firebase";
 import { useHistory } from "react-router-dom";
@@ -40,7 +40,8 @@ function Profile() {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState();
-  const handleClickCurrentShowPassword = () => setShowCurrentPassword((show) => !show);
+  const handleClickCurrentShowPassword = () =>
+    setShowCurrentPassword((show) => !show);
   const handleClickNewShowPassword = () => setShowNewPassword((show) => !show);
   const handleMouseDownPassword = (event) => {
     event.preventDefault();
@@ -90,33 +91,25 @@ function Profile() {
       isSubmitting: true,
     }));
 
-    // state'lerin güncellendiğinden emin olmak için bekleyin
-    await new Promise((resolve) => setTimeout(resolve, 0));
-
-    // state'lerin güncellendiği son hallerini kullanarak hataları kontrol edin
     const errorMessages = {
-      fullname: !userData.fullname ? "İsim soyisim boş olamaz." : "",
+      fullname: !userData.fullname ? "Name surname cannot be empty." : "",
       email_adress: !userData.email_adress
-        ? "E-posta adresi girilmedi."
+        ? "Email cannot be empty."
         : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userData.email_adress)
-        ? "Hatalı e-posta adresi."
+        ? "Incorrect E-mail address."
         : "",
       currentPassword:
         userData.currentPassword.length < 6
-          ? "Şifre en az 6 karakter olmalıdır."
+          ? "Your password must consist of at least 6 characters."
           : "",
       newPassword:
         userData.newPassword.length < 6
-          ? "Yeni şifre en az 6 karakter olmalıdır."
+          ? "Your new password must consist of at least 6 characters."
           : "",
     };
 
     setErrorMessages(errorMessages);
 
-    // hata mesajlarının güncellendiğinden emin olmak için bekleyin
-    await new Promise((resolve) => setTimeout(resolve, 0));
-
-    // state'lerin güncellendiği son hallerini kullanarak submit işlemini gerçekleştirin
     const isFormValid = Object.values(errorMessages).every(
       (errorMsg) => errorMsg === ""
     );
@@ -129,13 +122,7 @@ function Profile() {
         );
         await reauthenticateWithCredential(auth.currentUser, credential);
 
-         updateProfile(currentUser, {
-           displayName: userData.fullname,
-         });
-
-         await updateEmail(currentUser, userData.email_adress);
-         await updatePassword(currentUser, userData.newPassword);
-        axios.patch(
+        await axios.patch(
           process.env.REACT_APP_BACKEND_URL + `/users/${currentUser.uid}`,
           {
             fullname: userData.fullname,
@@ -148,6 +135,14 @@ function Profile() {
             },
           }
         );
+
+        updateProfile(currentUser, {
+          displayName: userData.fullname,
+        });
+
+        await updateEmail(currentUser, userData.email_adress);
+        await updatePassword(currentUser, userData.newPassword);
+
         history.push("/auth");
         console.log("Profile updated.");
       } catch (error) {
@@ -158,11 +153,9 @@ function Profile() {
         } else if (errorCode === "auth/wrong-password") {
           setError("Current password is wrong, please check!");
         } else {
-          setError("Something wrong please try again later.");
+          setError(error.response.data.error);
         }
       }
-    } else {
-      console.log("Form hatalı!");
     }
   };
   const isSmallScreen = useMediaQuery("(max-width: 600px)");
@@ -210,7 +203,7 @@ function Profile() {
                 }}
               >
                 <Avatar
-                src={DefaultAvatar}
+                  src={DefaultAvatar}
                   sx={{
                     width: isSmallScreen ? 100 : 200,
                     height: isSmallScreen ? 100 : 200,
@@ -297,7 +290,11 @@ function Profile() {
                             onMouseDown={handleMouseDownPassword}
                             edge="end"
                           >
-                            {showCurrentPassword ? <VisibilityOff /> : <Visibility />}
+                            {showCurrentPassword ? (
+                              <VisibilityOff />
+                            ) : (
+                              <Visibility />
+                            )}
                           </IconButton>
                         </InputAdornment>
                       }
@@ -331,7 +328,11 @@ function Profile() {
                             onMouseDown={handleMouseDownPassword}
                             edge="end"
                           >
-                            {showNewPassword ? <VisibilityOff /> : <Visibility />}
+                            {showNewPassword ? (
+                              <VisibilityOff />
+                            ) : (
+                              <Visibility />
+                            )}
                           </IconButton>
                         </InputAdornment>
                       }

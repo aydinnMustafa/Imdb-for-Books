@@ -89,7 +89,7 @@ function Login() {
       email_adress: !userData.email_adress
         ? "Email cannot be empty."
         : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userData.email_adress)
-        ? "Incorrect E-mail address"
+        ? "Incorrect E-mail address."
         : "",
       password:
         userData.password.length < 6
@@ -99,10 +99,6 @@ function Login() {
 
     setErrorMessages(errorMessages);
 
-    // hata mesajlarının güncellendiğinden emin olmak için bekleyin
-    await new Promise((resolve) => setTimeout(resolve, 0));
-
-    // state'lerin güncellendiği son hallerini kullanarak submit işlemini gerçekleştirin
     const isFormValid = Object.values(errorMessages).every(
       (errorMsg) => errorMsg === ""
     );
@@ -128,8 +124,6 @@ function Login() {
           setError
         );
       }
-    } else {
-      console.log("Form is invalid.");
     }
   };
 

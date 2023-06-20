@@ -94,7 +94,7 @@ export default function AccountPopover() {
               to="/profile"
               style={{ color: "inherit", textDecoration: "none" }}
             >
-              Settings
+              My Profile
             </Link>
           </MenuItem>
         </Stack>

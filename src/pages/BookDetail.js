@@ -61,6 +61,9 @@ const BookDetail = () => {
                 component="img"
                 height={isSmallScreen ? 400 : 635}
                 image={bookDetails && bookDetails.image}
+                onError={(e) => {
+                  e.target.src = require("../assets/default-book-cover.png")
+                }}
                 alt={bookDetails && bookDetails.name}
                 sx={{
                   objectFit: "contain",
@@ -95,7 +98,7 @@ const BookDetail = () => {
                 <Typography
                   variant="body2"
                   color="text.secondary"
-                  sx={{ marginTop: 2 }}
+                  sx={{ marginTop: 2, whiteSpace:"pre-line" }}
                 >
                   {bookDetails && bookDetails.description}
                 </Typography>

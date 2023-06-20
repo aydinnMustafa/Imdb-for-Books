@@ -4,7 +4,8 @@ const mongoose = require("mongoose");
 const usersRoutes = require("./routes/users-routes");
 const booksRoutes = require("./routes/books-routes");
 const adminRoutes = require("./routes/admin-routes");
-const HttpError = require("./models/http-error");
+
+const errorHandler = require("./middleware/errorHandler");
 const auth = require("./middleware/auth");
 const app = express();
 
@@ -30,9 +31,12 @@ app.use("/api/books", auth, booksRoutes);
 app.use("/api/admin", auth, adminRoutes);
 
 app.use((req, res, next) => {
-  const error = new HttpError("Could not find this route.", 404);
-  throw error;
+  const error = new Error("Could not find this route");
+  error.code = 404;
+  return next(error);
 });
+
+app.use(errorHandler);
 
 mongoose
   .connect(process.env.MONGODB_CONNECTION_URL)

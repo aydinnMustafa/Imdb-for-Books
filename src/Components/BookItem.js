@@ -41,6 +41,9 @@ function BookItem(props) {
         <CardMedia
           component="img"
           image={imageUrl}
+          onError={(e) => {
+            e.target.src = require("../assets/default-book-cover.png")
+          }}
           alt="Book Cover"
           sx={{
             maxHeight: 330,
