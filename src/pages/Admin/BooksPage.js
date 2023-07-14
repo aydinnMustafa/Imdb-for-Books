@@ -1,5 +1,5 @@
 import { filter } from "lodash";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useContext } from "react";
 // @mui
 import {
   Card,
@@ -29,8 +29,9 @@ import Loading from "../../Components/Loading";
 // sections
 import { ListHead, ListToolbar } from "../../Components/Admin/Users/user";
 // mock
-import axios from "axios";
+import { AbilityContext } from "../../features/can";
 import { auth } from "../../firebase";
+import { https } from "../../features/http-common";
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
@@ -74,6 +75,7 @@ function applySortFilter(array, comparator, query) {
 }
 
 export default function BooksPage() {
+  const ability = useContext(AbilityContext);
   const [open, setOpen] = useState(null);
   const [loading, setLoading] = useState(false);
   const [fetchError, setFetchError] = useState(false);
@@ -115,15 +117,8 @@ export default function BooksPage() {
   const userToken = auth.currentUser.accessToken;
   const fetchBooks = useCallback(async () => {
     try {
-      const response = await axios.get(
-        process.env.REACT_APP_BACKEND_URL + "/admin/books",
-        {
-          headers: {
-            Authorization: `Bearer ${userToken}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await https(userToken).get("/admin/books");
+
       setLoadedBooks(response.data.books);
     } catch (err) {
       setFetchError(true);
@@ -182,8 +177,8 @@ export default function BooksPage() {
       setOpen(null);
       setLoading(true);
       try {
-        const response = await axios.patch(
-          process.env.REACT_APP_BACKEND_URL + `/admin/book/${selectedBook}`,
+        const response = await https(userToken).patch(
+          `/admin/book/${selectedBook}`,
           {
             name: bookData.name,
             author: bookData.author,
@@ -193,12 +188,6 @@ export default function BooksPage() {
             image: bookData.image,
             language: bookData.language,
             pages: bookData.pages,
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${userToken}`,
-              "Content-Type": "application/json",
-            },
           }
         );
         setSelectedBook("");
@@ -226,7 +215,7 @@ export default function BooksPage() {
       console.log("Form inputs incorrect.");
     }
   };
-console.log(bookData);
+  console.log(bookData);
   const handleEdit = async () => {
     const foundBook = loadedBooks.find((book) => book._id === selectedBook);
     setBookData({ ...foundBook });
@@ -249,14 +238,8 @@ console.log(bookData);
     setOpen(null);
     setLoading(true);
     try {
-      const response = await axios.delete(
-        process.env.REACT_APP_BACKEND_URL + `/admin/book/${selectedBook}`,
-        {
-          headers: {
-            Authorization: `Bearer ${userToken}`,
-            "Content-Type": "application/json",
-          },
-        }
+      const response = await https(userToken).delete(
+        `/admin/book/${selectedBook}`
       );
       setSelectedBook("");
       fetchBooks();
@@ -276,6 +259,7 @@ console.log(bookData);
       }));
       setLoading(false);
     }
+
   };
 
   const handleClick = (event, _id) => {
@@ -307,18 +291,19 @@ console.log(bookData);
     if (fetchError) {
       return (
         <div
-        style={{
-          position: "fixed",
-          top: "50%",
-          left: "55%",
-          transform: "translate(-50%, -50%)",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          zIndex: 2,
-        }}
+          style={{
+            position: "fixed",
+            top: "50%",
+            left: "55%",
+            transform: "translate(-50%, -50%)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 2,
+          }}
         >
-         An error occurred while loading books. Please try again by refreshing the page.
+          An error occurred while loading books. Please try again by refreshing
+          the page.
         </div>
       );
     } else {
@@ -500,14 +485,15 @@ console.log(bookData);
           <Edit />
           Edit
         </MenuItem>
-
-        <MenuItem
-          onClick={() => setDeleteModalOpen(true)}
-          sx={{ color: "error.main" }}
-        >
-          <Delete />
-          Delete
-        </MenuItem>
+        {ability.can("delete", "Book") && (
+          <MenuItem
+            onClick={() => setDeleteModalOpen(true)}
+            sx={{ color: "error.main" }}
+          >
+            <Delete />
+            Delete
+          </MenuItem>
+        )}
       </Popover>
 
       <Modal open={editModalOpen}>

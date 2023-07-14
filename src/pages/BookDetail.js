@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import axios from "axios";
+import { https } from "../features/http-common";
 import { auth } from "../firebase";
 import {
   Container,
@@ -22,14 +22,8 @@ const BookDetail = () => {
   useEffect(() => {
     const fetchBookDetails = async () => {
       try {
-        const response = await axios.get(
-          process.env.REACT_APP_BACKEND_URL + `/books/${id}`,
-          {
-            headers: {
-              Authorization: `Bearer ${auth.currentUser.accessToken}`,
-              "Content-Type": "application/json",
-            },
-          }
+        const response = await https(auth.currentUser.accessToken).get(
+          `/books/${id}`
         );
         setBookDetails(response.data.book);
       } catch (err) {
@@ -62,7 +56,7 @@ const BookDetail = () => {
                 height={isSmallScreen ? 400 : 635}
                 image={bookDetails && bookDetails.image}
                 onError={(e) => {
-                  e.target.src = require("../assets/default-book-cover.png")
+                  e.target.src = require("../assets/default-book-cover.png");
                 }}
                 alt={bookDetails && bookDetails.name}
                 sx={{
@@ -98,7 +92,7 @@ const BookDetail = () => {
                 <Typography
                   variant="body2"
                   color="text.secondary"
-                  sx={{ marginTop: 2, whiteSpace:"pre-line" }}
+                  sx={{ marginTop: 2, whiteSpace: "pre-line" }}
                 >
                   {bookDetails && bookDetails.description}
                 </Typography>

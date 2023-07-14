@@ -18,7 +18,7 @@ import InputLabel from "@mui/material/InputLabel";
 import Avatar from "@mui/material/Avatar";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import DefaultAvatar from "../assets/default-avatar.jpg";
-import axios from "axios";
+import { https } from "../features/http-common";
 
 import {
   reauthenticateWithCredential,
@@ -115,6 +115,7 @@ function Profile() {
     );
     if (isFormValid) {
       setLoading(true);
+
       try {
         const credential = EmailAuthProvider.credential(
           currentUser.email,
@@ -122,17 +123,11 @@ function Profile() {
         );
         await reauthenticateWithCredential(auth.currentUser, credential);
 
-        await axios.patch(
-          process.env.REACT_APP_BACKEND_URL + `/users/${currentUser.uid}`,
+        await https(auth.currentUser.accessToken).patch(
+          `/users/${currentUser.uid}`,
           {
             fullname: userData.fullname,
             email: userData.email_adress,
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${auth.currentUser.accessToken}`,
-              "Content-Type": "application/json",
-            },
           }
         );
 

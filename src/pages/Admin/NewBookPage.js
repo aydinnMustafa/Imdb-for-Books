@@ -13,7 +13,7 @@ import {
 } from "@mui/material";
 import Loading from "../../Components/Loading";
 import AddBoxIcon from "@mui/icons-material/AddBox";
-import axios from "axios";
+import { https } from "../../features/http-common";
 import { auth } from "../../firebase";
 
 const NewBookPage = () => {
@@ -84,8 +84,8 @@ const NewBookPage = () => {
     if (isFormValid) {
       setLoading(true);
       try {
-        const response = await axios.post(
-          process.env.REACT_APP_BACKEND_URL + `/admin/book/add`,
+        const response = await https(auth.currentUser.accessToken).post(
+          "/admin/book/add",
           {
             userId: userId,
             name: bookData.name,
@@ -96,12 +96,6 @@ const NewBookPage = () => {
             image: bookData.image,
             language: bookData.language,
             pages: bookData.pages,
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${auth.currentUser.accessToken}`,
-              "Content-Type": "application/json",
-            },
           }
         );
         setLoading(false);

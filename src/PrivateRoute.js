@@ -18,40 +18,15 @@ const PrivateRoute = ({ component: Component, ...rest }) => {
       if (userAuth) {
         console.log(userAuth);
         userAuth.getIdToken().then((token) => {
-          let decodeUserRole = jwtDecode(token).role;
+          let decodedUserRole = jwtDecode(token).role;
           dispatch(
             login({
               email: userAuth.email,
               uid: userAuth.uid,
               displayName: userAuth.displayName,
-              role: decodeUserRole,
+              role: decodedUserRole,
             })
           );
-
-          // axios
-          //   .post(
-          //     "http://localhost:5000/books",
-          //     { _id: userAuth.uid },
-          //     {
-          //       headers: {
-          //         Authorization: `Bearer ${token}`,
-          //         "Content-Type": "application/json",
-          //       },
-          //     }
-          //   )
-          //   .then((response) => {
-          //     let userToken = response.data.token;
-          //       console.log(userToken);
-          //     let userRole = jwtDecode(userToken).role;
-          //     dispatch(
-          //       login({
-          //         email: userAuth.email,
-          //         uid: userAuth.uid,
-          //         displayName: userAuth.displayName,
-          //         role: userRole,
-          //       })
-          //     );
-          //   });
         });
       } else {
         dispatch(logout());

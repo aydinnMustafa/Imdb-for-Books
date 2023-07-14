@@ -1,10 +1,21 @@
-import React from "react";
-import { AppBar, Toolbar, styled, Box, Typography, Link } from "@mui/material";
+import React, { useContext } from "react";
+import {
+  AppBar,
+  Toolbar,
+  styled,
+  Box,
+  Typography,
+  Link,
+} from "@mui/material";
 import AutoStoriesIcon from "@mui/icons-material/AutoStories";
 
 import AccountPopover from "./AccountPopover";
 
+import { AbilityContext } from "../features/can";
+
 const Navbar = () => {
+  const ability = useContext(AbilityContext);
+
   const StyledToolbar = styled(Toolbar)({
     display: "flex",
     justifyContent: "space-between",
@@ -17,6 +28,11 @@ const Navbar = () => {
   const MenuItems = [
     { id: 1, Name: "Books", Link: "/books" },
     { id: 2, Name: "Favorites", Link: "/favorites" },
+    ability.can("read", "AdminPanel") && {
+      id: 3,
+      Name: "Admin Panel",
+      Link: "/admin",
+    },
   ];
 
   return (
@@ -26,21 +42,25 @@ const Navbar = () => {
       }}
     >
       <StyledToolbar>
-        <Link sx={{
-                  cursor: "pointer",
-                  color: "#fff",
-                  textDecoration: "none",
-                }}
-                href="/books">
-        <Box display="flex" alignItems="center">
-          <AutoStoriesIcon />
-          <Box marginLeft={1}>
-            <Typography variant="h7" style={{ fontFamily: "Lobster" }}>
-              <span style={{ display: "block" }}>Imdb</span>
-              <span style={{ display: "block", marginLeft: 5 }}>For Books</span>
-            </Typography>
+        <Link
+          sx={{
+            cursor: "pointer",
+            color: "#fff",
+            textDecoration: "none",
+          }}
+          href="/books"
+        >
+          <Box display="flex" alignItems="center">
+            <AutoStoriesIcon />
+            <Box marginLeft={1}>
+              <Typography variant="h7" style={{ fontFamily: "Lobster" }}>
+                <span style={{ display: "block" }}>Imdb</span>
+                <span style={{ display: "block", marginLeft: 5 }}>
+                  For Books
+                </span>
+              </Typography>
+            </Box>
           </Box>
-        </Box>
         </Link>
         <MenuBox>
           {MenuItems.map((item) => (

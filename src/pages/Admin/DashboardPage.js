@@ -1,11 +1,13 @@
 import { Grid, Container, Typography } from '@mui/material';
 import AppWidgetSummary from '../../Components/Admin/app/AppWidgetSummary';
 import { SupervisedUserCircle, MenuBook, Book } from '@mui/icons-material';
-
+import { useSelector } from 'react-redux';
+import { selectUser } from '../../features/userSlice';
 
 // ----------------------------------------------------------------------
 
 export default function DashboardAppPage() {
+const user = useSelector(selectUser);
 
   return (
     <>
@@ -14,8 +16,8 @@ export default function DashboardAppPage() {
      
 
       <Container maxWidth="xl">
-        <Typography variant="h4" sx={{ mt: 12, mb: 6, fontFamily: "Roboto" }}>
-          Hi, Welcome back
+        <Typography variant="h5" sx={{ mt: 12, mb: 6, fontFamily: "Roboto" }}>
+          Welcome back, <span style={{ fontStyle: "italic",fontSize:"20px" }}>{user.displayName}</span>
         </Typography>
         
         <Grid container spacing={3}>

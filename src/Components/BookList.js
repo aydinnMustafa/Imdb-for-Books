@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Grid, Pagination, CssBaseline } from "@mui/material";
-import axios from "axios";
+import { https } from "../features/http-common";
 import { auth } from "../firebase";
 import { useSelector } from "react-redux";
 
@@ -21,14 +21,8 @@ const BookList = () => {
     setLoadedBooks(); // We clean old data on transitions to different pages.
     const fetchBooks = async () => {
       try {
-        const response = await axios.get(
-          process.env.REACT_APP_BACKEND_URL + `/books?page=${currentPage}`,
-          {
-            headers: {
-              Authorization: `Bearer ${auth.currentUser.accessToken}`,
-              "Content-Type": "application/json",
-            },
-          }
+        const response = await https(auth.currentUser.accessToken).get(
+          `/books?page=${currentPage}`
         );
         setPageCount(response.data.pageCount);
         setLoadedBooks(response.data.books);
@@ -44,19 +38,13 @@ const BookList = () => {
     setLoading(true);
     setFavoritesBooks({}); // We clean old data on transitions to different pages.
     async function fetchFavoritesBooks() {
-      const response = await axios.post(
-        process.env.REACT_APP_BACKEND_URL +
-          `/books/favorites?page=${currentPage}`,
+      const response = await https(auth.currentUser.accessToken).post(
+        `/books/favorites?page=${currentPage}`,
         {
           userId: user.uid,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${auth.currentUser.accessToken}`,
-            "Content-Type": "application/json",
-          },
         }
       );
+
       const favoritesBooksObj = {};
 
       response.data.favoritebooks.forEach((favorite) => {
@@ -76,19 +64,10 @@ const BookList = () => {
         setFavoritesBooks({ ...favoritesBooks, [bookId]: false });
       }
 
-      await axios.post(
-        process.env.REACT_APP_BACKEND_URL + "/books/addfavorite",
-        {
-          userId: user.uid,
-          bookId: bookId,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${auth.currentUser.accessToken}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      await https(auth.currentUser.accessToken).post("/books/addfavorite", {
+        userId: user.uid,
+        bookId: bookId,
+      });
     } catch (err) {
       console.error(err);
     }
@@ -100,8 +79,7 @@ const BookList = () => {
 
   return (
     <React.Fragment>
-     
-      <Grid sx={{ flexGrow: 1, marginTop: 8}} container spacing={2}>
+      <Grid sx={{ flexGrow: 1, marginTop: 8 }} container spacing={2}>
         <Grid item xs={12}>
           <Grid container justifyContent="center" spacing={2}>
             {!loading && loadedBooks ? (

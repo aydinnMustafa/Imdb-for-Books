@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { https } from "../features/http-common";
 import { auth } from "../firebase";
 import { Grid, Pagination, CssBaseline } from "@mui/material";
 import { useSelector } from "react-redux";
@@ -23,18 +23,10 @@ function FavoritesPage() {
     setFavoritesBooks({}); // We clean old data on transitions to different pages.
     const fetchFavoriteBooks = async () => {
       try {
-        const response = await axios.post(
-          process.env.REACT_APP_BACKEND_URL +
-            `/books/favorites?page=${currentPage}`,
-
+        const response = await https(auth.currentUser.accessToken).post(
+          `/books/favorites?page=${currentPage}`,
           {
             userId: user.uid,
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${auth.currentUser.accessToken}`,
-              "Content-Type": "application/json",
-            },
           }
         );
         setPageCount(response.data.pageCount);
@@ -59,19 +51,10 @@ function FavoritesPage() {
         setFavoritesBooks({ ...favoritesBooks, [bookId]: false });
       }
 
-      await axios.post(
-        process.env.REACT_APP_BACKEND_URL + "/books/addfavorite",
-        {
-          userId: user.uid,
-          bookId: bookId,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${auth.currentUser.accessToken}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      await https(auth.currentUser.accessToken).post("/books/addfavorite", {
+        userId: user.uid,
+        bookId: bookId,
+      });
     } catch (err) {
       console.error(err);
     }

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 
 // @mui
 import { styled } from "@mui/material/styles";
@@ -9,6 +9,7 @@ import UsersPage from "./Admin/UsersPage";
 import BooksPage from "./Admin/BooksPage";
 import DashboardPage from "./Admin/DashboardPage";
 import NewBookPage from "./Admin/NewBookPage";
+import { AbilityContext } from "../features/can";
 
 // ----------------------------------------------------------------------
 
@@ -37,6 +38,7 @@ const Main = styled("div")(({ theme }) => ({
 // ----------------------------------------------------------------------
 
 export default function AdminPanel() {
+  const ability = useContext(AbilityContext);
   const [open, setOpen] = useState(false);
   const isAdminUsersPage = window.location.pathname === "/admin/users";
   const isAdminBooksPage = window.location.pathname === "/admin/books";
@@ -47,10 +49,10 @@ export default function AdminPanel() {
     <StyledRoot>
       <Header onOpenNav={() => setOpen(true)} />
       <Nav openNav={open} onCloseNav={() => setOpen(false)} />
-      {isAdminUsersPage && <UsersPage />}
-      {isAdminBooksPage && <BooksPage />}
-      {isAdminDashboardPage && <DashboardPage />}
-      {isAdminNewBookPage && <NewBookPage />}
+      {ability.can("read", "User") && isAdminUsersPage && <UsersPage />}
+      {ability.can("read", "Book") && isAdminBooksPage && <BooksPage />}
+      {ability.can("read", "AdminPanel") && isAdminDashboardPage && <DashboardPage />}
+      {ability.can("create", "Book") && isAdminNewBookPage && <NewBookPage />}
       <Main></Main>
     </StyledRoot>
   );

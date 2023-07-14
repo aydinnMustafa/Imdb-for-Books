@@ -33,7 +33,8 @@ import Loading from "../../Components/Loading";
 // sections
 import { ListHead, ListToolbar } from "../../Components/Admin/Users/user";
 // mock
-import axios from "axios";
+
+import { https } from "../../features/http-common";
 import { auth } from "../../firebase";
 // ----------------------------------------------------------------------
 
@@ -110,20 +111,11 @@ export default function UsersPage() {
   const userToken = auth.currentUser.accessToken;
   const fetchUsers = useCallback(async () => {
     try {
-      const response = await axios.get(
-        process.env.REACT_APP_BACKEND_URL + "/admin/users",
-        {
-          headers: {
-            Authorization: `Bearer ${userToken}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await https(userToken).get("/admin/users");
       setLoadedUsers(response.data.users);
     } catch (err) {
       setFetchError(true);
       setLoading(false);
-      
     }
   }, [userToken]);
 
@@ -168,18 +160,12 @@ export default function UsersPage() {
       setOpen(null);
       setLoading(true);
       try {
-        const response = await axios.patch(
-          process.env.REACT_APP_BACKEND_URL + `/admin/user/${selectedUser}`,
+        const response = await https(userToken).patch(
+          `/admin/user/${selectedUser}`,
           {
             fullname: userData.fullname,
             email: userData.email,
             role: userData.role,
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${userToken}`,
-              "Content-Type": "application/json",
-            },
           }
         );
         setSelectedUser("");
@@ -211,14 +197,8 @@ export default function UsersPage() {
     setOpen(null);
     setLoading(true);
     try {
-      const response = await axios.delete(
-        process.env.REACT_APP_BACKEND_URL + `/admin/user/${selectedUser}`,
-        {
-          headers: {
-            Authorization: `Bearer ${userToken}`,
-            "Content-Type": "application/json",
-          },
-        }
+      const response = await https(auth.currentUser.accessToken).delete(
+        `/admin/user/${selectedUser}`
       );
       setSelectedUser("");
       setAlertState((prevState) => ({
