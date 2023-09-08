@@ -9,18 +9,17 @@ export const https = (token) => {
     },
   });
 
-  console.log("ilk gelen token", token);
-
+  /* 
+Firebase token expires after one hour. If the user stays on the same page for 1 hour and sends a request, he gets a error because the token has expired.
+To fix this problem, if the response 401 is returned from the API, we create a new token and send the request again.
+*/
   const responseInterceptor = client.interceptors.response.use(
     (response) => response,
     async (error) => {
       if (error.response && error.response.status === 401) {
-        console.log("401 Hatası! FirebaseToken yenileniyor...");
-        console.log("eskitoken", token);
-        console.log(error.response.config);
+        console.log("Error 401. Refreshing firebase Token...");
         try {
           const refreshedToken = await auth.currentUser.getIdToken(true);
-          console.log("yenilenentoken", refreshedToken);
 
           // Create a new axios request and copy the first request
           const retryRequest = {
@@ -35,10 +34,8 @@ export const https = (token) => {
           client.interceptors.response.eject(responseInterceptor);
 
           const retryResponse = await client.request(retryRequest);
-          console.log("Yeniden deneme başarılı!", retryResponse.data);
           return retryResponse;
         } catch (retryError) {
-          console.log("Yeniden deneme başarısız!", retryError);
           throw retryError;
         }
       }
@@ -46,6 +43,6 @@ export const https = (token) => {
       throw error;
     }
   );
-  
+
   return client;
 };

@@ -120,8 +120,10 @@ export default function UsersPage() {
   }, [userToken]);
 
   useEffect(() => {
-    fetchUsers();
-  }, [fetchUsers]);
+    if (!loadedUsers) {
+      fetchUsers();
+    }
+  }, [fetchUsers, loadedUsers]);
 
   const handleChange = (event) => {
     setUserData((prevState) => ({

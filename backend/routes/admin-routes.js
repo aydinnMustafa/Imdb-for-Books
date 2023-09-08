@@ -15,6 +15,8 @@ router.get('/users', adminController.getUsers);
 router.patch('/user/:uid', adminController.updateUser);
 router.delete("/user/:uid", adminController.deleteUser);
 
+//Dashboard
+router.get('/dashboard', adminController.getDashboardData);
 
 
 module.exports = router;

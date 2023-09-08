@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
   Container,
-  Card,
   Box,
   TextField,
   Typography,
@@ -128,8 +127,8 @@ const NewBookPage = () => {
   };
   return (
     <>
-      <Container style={{ marginTop: "13vh" }}>
-        <Card sx={{ height: 650 }}>
+      <Container style={{ marginTop: "13vh", height: 580,}}>
+       
           {loading && <Loading asOverlay />}
           <Snackbar
             open={alertState.openAlert}
@@ -152,14 +151,14 @@ const NewBookPage = () => {
 
           <Grid
             container
-            sx={{ display: "flex", justifyContent: "center", marginTop: 1 }}
+            sx={{ display: "flex",marginTop: 1 }}
           >
             <Box
               sx={{
-                width: 1000,
+                width: "90vw",
                 maxWidth: "90vw",
                 bgcolor: "background.paper",
-                borderRadius: 8,
+                borderRadius: 3,
                 boxShadow: 5,
                 p: 4,
                 display: "flex",
@@ -283,7 +282,7 @@ const NewBookPage = () => {
               </Box>
             </Box>
           </Grid>
-        </Card>
+        
       </Container>
     </>
   );

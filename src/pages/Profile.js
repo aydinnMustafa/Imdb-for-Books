@@ -84,7 +84,7 @@ function Profile() {
     setError("");
   };
 
-  const handleSubmit = async (event) => {
+  const handleUserUpdate = async (event) => {
     event.preventDefault();
     setUserData((prevUserData) => ({
       ...prevUserData,
@@ -139,7 +139,6 @@ function Profile() {
         await updatePassword(currentUser, userData.newPassword);
 
         history.push("/auth");
-        console.log("Profile updated.");
       } catch (error) {
         const errorCode = error.code;
         setLoading(false);
@@ -208,7 +207,7 @@ function Profile() {
                 <Box
                   component="form"
                   noValidate
-                  onSubmit={handleSubmit}
+                  onSubmit={handleUserUpdate}
                   sx={{ mt: 1, width: "100%" }}
                 >
                   <FormControl

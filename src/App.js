@@ -26,7 +26,7 @@ import "./App.css";
 function App() {
   const user = useSelector(selectUser);
 
-  const userAbilitiesMain = user ? buildAbility(user.role) : null;
+  const userAbilitiesMain = user ? buildAbility(user.role) : null; // Controls the user's role via the redux store, and if the role is available, ability works with that role
   return (
     <AbilityContext.Provider value={userAbilitiesMain}>
       <Router>

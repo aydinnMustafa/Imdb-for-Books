@@ -215,7 +215,7 @@ export default function BooksPage() {
       console.log("Form inputs incorrect.");
     }
   };
-  console.log(bookData);
+
   const handleEdit = async () => {
     const foundBook = loadedBooks.find((book) => book._id === selectedBook);
     setBookData({ ...foundBook });

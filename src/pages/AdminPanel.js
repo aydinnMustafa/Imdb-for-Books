@@ -1,8 +1,7 @@
 import { useState, useContext } from "react";
 
-// @mui
 import { styled } from "@mui/material/styles";
-//
+
 import Header from "../Components/Admin/Header";
 import Nav from "../Components/Admin/Nav";
 import UsersPage from "./Admin/UsersPage";
@@ -44,14 +43,16 @@ export default function AdminPanel() {
   const isAdminBooksPage = window.location.pathname === "/admin/books";
   const isAdminDashboardPage = window.location.pathname === "/admin";
   const isAdminNewBookPage = window.location.pathname === "/admin/newbook";
-
+  //AdminPanel's items are loaded according to pathname and user ability.
   return (
     <StyledRoot>
       <Header onOpenNav={() => setOpen(true)} />
       <Nav openNav={open} onCloseNav={() => setOpen(false)} />
       {ability.can("read", "User") && isAdminUsersPage && <UsersPage />}
       {ability.can("read", "Book") && isAdminBooksPage && <BooksPage />}
-      {ability.can("read", "AdminPanel") && isAdminDashboardPage && <DashboardPage />}
+      {ability.can("read", "AdminPanel") && isAdminDashboardPage && (
+        <DashboardPage />
+      )}
       {ability.can("create", "Book") && isAdminNewBookPage && <NewBookPage />}
       <Main></Main>
     </StyledRoot>

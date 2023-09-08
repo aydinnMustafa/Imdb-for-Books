@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import Button from "@mui/material/Button";
 import CssBaseline from "@mui/material/CssBaseline";
-// import FormControlLabel from "@mui/material/FormControlLabel";
-// import Checkbox from "@mui/material/Checkbox";
 import Alert from "@mui/material/Alert";
 import Paper from "@mui/material/Paper";
 import Box from "@mui/material/Box";
@@ -78,10 +76,8 @@ function Login() {
       isSubmitting: true,
     }));
 
-    // state'lerin güncellendiğinden emin olmak için bekleyin
-    await new Promise((resolve) => setTimeout(resolve, 0));
-
-    // state'lerin güncellendiği son hallerini kullanarak hataları kontrol edin
+    
+    // Error status checks of current states
     const errorMessages = {
       name: !isLoginMode && !userData.name ? "Name cannot be empty." : "",
       surname:
@@ -134,7 +130,6 @@ function Login() {
       })
       .catch((error) => {
         const errorCode = error.code;
-        console.log(errorCode);
         if (errorCode === "auth/missing-email") {
           setError("Please enter your email address first, then click.");
         } else if (errorCode === "auth/user-not-found") {

@@ -105,7 +105,9 @@ const updateBook = async (req, res, next) => {
       error.code = 404;
       return next(error);
     }
-    res.status(200).json({ message: "The book has been successfully updated." });
+    res
+      .status(200)
+      .json({ message: "The book has been successfully updated." });
   } catch (err) {
     const error = new Error("The book could not be updated. Please try again.");
     error.code = 500;
@@ -135,7 +137,9 @@ const deleteBook = async (req, res, next) => {
     }
     await Favorite.deleteMany({ bookId: bookId });
 
-    res.status(200).json({ message: "The book has been successfully deleted." });
+    res
+      .status(200)
+      .json({ message: "The book has been successfully deleted." });
   } catch (err) {
     const error = new Error(
       "The book could not be deleted. Please try again later."
@@ -253,6 +257,20 @@ const deleteUser = async (req, res, next) => {
   }
 };
 
+const getDashboardData = async (req, res, next) => {
+  try {
+    const bookCount = await Book.countDocuments();
+    const userCount = await User.countDocuments();
+    const favoriteBookCount = await Favorite.countDocuments();
+
+    res.status(200).json({bookCount: bookCount, userCount: userCount, favoriteBookCount: favoriteBookCount});
+  } catch (err) {
+    const error = new Error("The data could not be getting. Please try again.");
+    error.code = 500;
+    return next(error);
+  }
+};
+
 exports.addBook = addBook;
 exports.getBooks = getBooks;
 exports.deleteBook = deleteBook;
@@ -261,3 +279,5 @@ exports.updateBook = updateBook;
 exports.getUsers = getUsers;
 exports.updateUser = updateUser;
 exports.deleteUser = deleteUser;
+
+exports.getDashboardData = getDashboardData;

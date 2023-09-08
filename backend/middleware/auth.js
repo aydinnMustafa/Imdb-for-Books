@@ -1,18 +1,18 @@
 const admin = require("../firebase-config");
 const User = require("../models/users-schema");
-const HttpError = require("./errorHandler");
 
 const auth = async (req, res, next) => {
+  const token = req.headers.authorization?.split(" ")[1];
+
+  if (!token) {
+    const error = new Error("There is no Authorization header.");
+    error.code = 401;
+    return next(error);
+  }
+
   try {
-    const token = req.headers.authorization?.split(" ")[1];
-
-    if (!token) {
-      res.status(401);
-      res.json({ error: "There is no Authorization header." });
-      return false;
-    }
-
     const decodedToken = await admin.auth().verifyIdToken(token);
+
     if (decodedToken.role) {
       const user = await User.findOne({ _id: decodedToken.user_id });
       if (user.role === decodedToken.role) {
@@ -21,9 +21,10 @@ const auth = async (req, res, next) => {
         return next();
       } else {
         // The token role does not match the one in the database.
-        res.status(401);
-        res.json({ error: "You are not authorized." });
-        return false;
+
+        const error = new Error("You are not authorized.");
+        error.code = 401;
+        return next(error);
       }
     } else {
       // Since it is a new registration, the token does not have a role. By default, we add the User role to the user token.
@@ -38,7 +39,9 @@ const auth = async (req, res, next) => {
       return next();
     }
   } catch (err) {
-    console.log(err);
+    const error = new Error("You are not authorized.");
+    error.code = 401;
+    return next(error);
   }
 };
 

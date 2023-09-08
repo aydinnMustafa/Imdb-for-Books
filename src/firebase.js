@@ -20,10 +20,10 @@ const firebaseConfig = {
   measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID,
 };
 
-// init firebase app
+
 const app = initializeApp(firebaseConfig);
 
-// services
+// All transactions made with Firebase in one place
 export const auth = getAuth(app);
 export const loginFunc = (
   auth,

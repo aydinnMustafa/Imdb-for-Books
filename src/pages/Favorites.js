@@ -62,7 +62,7 @@ function FavoritesPage() {
   const handlePageChange = (event, newPage) => {
     setCurrentPage(newPage);
   };
-  console.log(favoritesBooks);
+
   return (
     <React.Fragment>
       {loading && <Loading />}

@@ -2,7 +2,6 @@ import { AbilityBuilder, createMongoAbility } from "@casl/ability";
 
 const buildAbility = (userRole) => {
   const { can, cannot, build } = new AbilityBuilder(createMongoAbility);
-  console.log("abilitye gelen", userRole);
   if (userRole === "Admin") {
     can("manage", "all");
   } else if (userRole === "Editor") {
